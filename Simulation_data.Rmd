@@ -1,0 +1,69 @@
+# Application numérique des tests
+
+## Création de deux jeux de données
+
+### Simuler un processus de Poisson homogène
+
+```{r}
+simulPPh1 <- function(lambda,Tmax)
+{
+  nmax= rpois(1, lambda*Tmax)
+  uniformes <- runif(nmax, min = 0, max = Tmax)
+  temps_arrive = sort(uniformes)
+
+  return(temps_arrive)
+}
+```
+
+```{r}
+plot.PP<- function(PP)
+{
+  # plot the counting process (with jumps of size 1 (starting at point (0,0))):
+  plot(c(0,PP),0:length(PP),type="s",xlab="time t",ylab="number of events by time t")
+  # add the arrival times on the horizontal axis: 
+  points(PP,0*PP,type="p",pch=16)
+  # link arrival times with the counts:
+  lines(PP,0:(length(PP)-1),type="h",lty=2)
+}
+```
+
+```{r}
+# Simulation and plot of a homogeneous Poisson process:
+PPh1 = simulPPh1(2,10)
+plot.PP(PPh1)
+```
+
+### Simuler un processus de Poisson inhomogène avec un $\lambda$ croissant
+
+```{r}
+simulPPi = function(lambda_fct,Tmax,M)
+{
+  PPh = simulPPh1(M,Tmax)
+  n = length(PPh)
+  unif = runif(n,0,M)
+  val_fct_lamb = lambda_fct(PPh)
+  to_return = sort(PPh[unif < val_fct_lamb])
+  return(to_return)
+}
+```
+
+```{r}
+Tmax=10
+lambda_fct1 <- function(t){return(3*t)}
+
+M1=2*Tmax
+PPi1 = simulPPi(lambda_fct1,Tmax,M1)
+print(PPi1)
+# plot:
+par(mfrow=c(1,2))
+curve(lambda_fct1,from=0,to=Tmax,n=1000)
+plot.PP(PPi1)
+```
+
+
+## Test de Laplace
+
+```{r}
+
+```
+
