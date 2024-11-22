@@ -114,24 +114,23 @@ calculate_power <- function(n_sim, T_max, borne_sup,lambda_func, alpha = 0.05) {
   rejections <- 0
   ntot = 0
   for (i in 1:n_sim) {
-    PPi1 = simulPPi(lambda_fct1,Tmax,borne_sup) 
+    PPi1 = simulPPi(lambda_func,T_max,borne_sup) 
     Z <- laplace_test(PPi1, T_max,alpha)
     if (!is.nan(Z[3]) && !is.na(Z[3])){
-      ntot=ntot+1
       if (Z[3]) {
         rejections <- rejections + 1
       }
       }
   }
-  return(rejections / ntot)
+  return(rejections / n_sim)
 }
 ```
 
 ```{r}
 T_max =10
 n_sim=1000
-lambda_fct1 <- function(t){return(0.1*t)}
-M1=0.1*Tmax
+lambda_fct1 <- function(t){return(exp(t))}
+M1=exp(T_max)
 
 power = calculate_power(n_sim, T_max, M1,lambda_fct1)
 power
@@ -140,7 +139,7 @@ power
 ```{r}
 coef_list = c(0.01,0.1,0.2,0.3,0.4,0.5,0.6,1,2)
 T_max =10
-n_sim=10000
+n_sim=1000
 
 powers = c()
 
@@ -164,9 +163,9 @@ ggplot(df, aes(x = x, y = y)) +
   theme_minimal()
 ```
 ```{r}
-coef_list = c(0.01,0.1,0.5,1,2,5,7.5,10)
+coef_list = c(0.01,0.02,0.03,0.04,0.05,0.1,0.2,0.3,0.5)
 T_max =10
-n_sim=10000
+n_sim=1000
 
 powers = c()
 
@@ -183,8 +182,33 @@ df <- data.frame(x = coef_list, y = powers)
 ggplot(df, aes(x = x, y = y)) +
   geom_point(color = "blue", size = 3) +
   geom_line(color = "red") +
-  labs(title = "Puissance pour un lambda linéaire",
-       x = "Coefficients de linéarité",
+  labs(title = "Puissance pour un lambda en t carré",
+       x = "Coefficients devant le carré",
+       y = "Puissance") +
+  theme_minimal()
+```
+```{r}
+coef_list = c(0.01,0.05,0.1,0.15,0.2,0.25,0.3,0.5)
+T_max =10
+n_sim=10000
+
+powers = c()
+
+for (coeff in coef_list) {
+  lambda_fct <- function(t){return(exp(coeff*t))}
+  M=exp(coeff*Tmax)
+  powers[length(powers) + 1] <- calculate_power(n_sim, T_max, M, lambda_fct)
+}
+
+# Convertir en data frame
+df <- data.frame(x = coef_list, y = powers)
+
+# Créer le graphique
+ggplot(df, aes(x = x, y = y)) +
+  geom_point(color = "blue", size = 3) +
+  geom_line(color = "red") +
+  labs(title = "Puissance pour un lambda exponentiel",
+       x = "Coefficients de l'exponentielle",
        y = "Puissance") +
   theme_minimal()
 ```
