@@ -4,6 +4,7 @@
 
 ### Simuler un processus de Poisson homogène
 
+
 ```{r}
 simulPPh1 <- function(lambda,Tmax)
 {
@@ -64,6 +65,127 @@ plot.PP(PPi1)
 ## Test de Laplace
 
 ```{r}
+laplace_stat <- function(arrival_times, T_max) {
+  n <- length(arrival_times)
+  Y <- sum(arrival_times)/T_max - (n / 2)
+  Z <- Y / (sqrt(n / 12))
+  return(Z)
+}
 
+laplace_test <- function(arrival_times, T_max,alpha){
+  X = laplace_stat(arrival_times, T_max)
+  pval = 1 - pnorm(X)
+  rejete_h0 = (pval < alpha)
+  to_return = c(X,pval,rejete_h0)
+  return(to_return)
+}
+```
+
+```{r}
+set.seed(18) 
+T_max = 10
+alpha = 0.05
+```
+
+```{r}
+PPh1 = simulPPh1(2,T_max)
+
+res = laplace_test(PPh1,T_max,alpha)
+print(paste("Rejet de H0 :",res[3]))
+print(paste("Stat de test :",res[1]))
+print(paste("pvaleur :",res[2]))
+```
+
+```{r}
+lambda_fct1 <- function(t){return(0.2*t)}
+
+M1=0.2*Tmax
+PPi1 = simulPPi(lambda_fct1,Tmax,M1)
+
+res = laplace_test(PPi1,T_max,alpha)
+print(paste("Rejet de H0 :",res[3]))
+print(paste("Stat de test :",res[1]))
+print(paste("pvaleur :",res[2]))
+```
+
+
+```{r}
+calculate_power <- function(n_sim, T_max, borne_sup,lambda_func, alpha = 0.05) {
+  rejections <- 0
+  ntot = 0
+  for (i in 1:n_sim) {
+    PPi1 = simulPPi(lambda_fct1,Tmax,borne_sup) 
+    Z <- laplace_test(PPi1, T_max,alpha)
+    if (!is.nan(Z[3]) && !is.na(Z[3])){
+      ntot=ntot+1
+      if (Z[3]) {
+        rejections <- rejections + 1
+      }
+      }
+  }
+  return(rejections / ntot)
+}
+```
+
+```{r}
+T_max =10
+n_sim=1000
+lambda_fct1 <- function(t){return(0.1*t)}
+M1=0.1*Tmax
+
+power = calculate_power(n_sim, T_max, M1,lambda_fct1)
+power
+
+```
+```{r}
+coef_list = c(0.01,0.1,0.2,0.3,0.4,0.5,0.6,1,2)
+T_max =10
+n_sim=10000
+
+powers = c()
+
+for (coeff in coef_list) {
+  lambda_fct <- function(t){return(coeff*t)}
+  M=coeff*Tmax
+  powers[length(powers) + 1] <- calculate_power(n_sim, T_max, M, lambda_fct)
+}
+library(ggplot2)
+
+# Convertir en data frame
+df <- data.frame(x = coef_list, y = powers)
+
+# Créer le graphique
+ggplot(df, aes(x = x, y = y)) +
+  geom_point(color = "blue", size = 3) +
+  geom_line(color = "red") +
+  labs(title = "Puissance pour un lambda linéaire",
+       x = "Coefficients de linéarité",
+       y = "Puissance") +
+  theme_minimal()
+```
+```{r}
+coef_list = c(0.01,0.1,0.5,1,2,5,7.5,10)
+T_max =10
+n_sim=10000
+
+powers = c()
+
+for (coeff in coef_list) {
+  lambda_fct <- function(t){return(coeff*(t**2))}
+  M=coeff*(Tmax**2)
+  powers[length(powers) + 1] <- calculate_power(n_sim, T_max, M, lambda_fct)
+}
+
+# Convertir en data frame
+df <- data.frame(x = coef_list, y = powers)
+
+# Créer le graphique
+ggplot(df, aes(x = x, y = y)) +
+  geom_point(color = "blue", size = 3) +
+  geom_line(color = "red") +
+  labs(title = "Puissance pour un lambda linéaire",
+       x = "Coefficients de linéarité",
+       y = "Puissance") +
+  theme_minimal()
 ```
 
