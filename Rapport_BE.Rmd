@@ -1,0 +1,77 @@
+---
+title: "HomTest-DeQuillacq-Gay-Gris"
+author: "Ewan DeQuillacq - Tristan Gay - Clément Gris"
+date: "2024"
+output: pdf_document
+---
+
+## Introduction
+
+Poisson processes, named after the mathematician Siméon Denis Poisson, are fundamental models in probability theory, widely used to describe phenomena where events occur randomly over time or space. They are characterized by their ability to model independent occurrences with a well-defined average intensity. These processes have diverse applications, notably in reliability analysis, telecommunications systems, and the modeling of claims in the insurance sector.
+
+In this project, we focus on a specific problem related to homogeneous and inhomogeneous Poisson processes. The homogeneous Poisson process (HPP) assumes a constant event intensity, while the inhomogeneous Poisson process (NHPP) allows the intensity to vary over time or space. A key question is to determine whether the intensity $\lambda(\cdot)$ is constant or increasing, which corresponds to testing the null hypothesis $H_0 : \lambda(\cdot)\ \text{is constant}$ against the alternative hypothesis $H_1 : \lambda(\cdot)\ \text{is increasing}$.
+
+This report focuses on the theoretical understanding and experimental validation of statistical tests designed to assess this homogeneity. In particular, we apply these methods to real-world data from large fire insurance claims in Denmark between 1980 and 1990, to determine whether an HPP or NHPP model is more appropriate.
+
+## I - Construction of tests
+
+In the first part of this report, we will focus on the theoretical study of tests described in the first reference article: **Lee J Bain, Max Engelhardt, and FT Wright. Tests for an increasing trend in the intensity of a Poisson process: A power study. Journal of the American Statistical Association, 80(390):419--422, 1985**. **[1]**
+
+We will demonstrate the mathematical constructions underlying these tests, highlighting the assumptions and fundamental properties of homogeneous Poisson processes. We will carry out the construction of hypothesis tests for the Laplace and Weibull distributions.
+
+#### **I.1 - Laplace test**
+
+-   Hypotheses :
+
+We test : $$ H_0 : \lambda(.) \; \text{is constant} \quad \text{versus} \quad H_1 : \lambda(.) \; \text{is increasing}$$
+
+-   Statistic :
+
+The test statistic proposed in the article **[1]** is as follows:
+
+$$\begin{aligned} L = \sum_{i=1}^n \frac{T_i}{T*} = \frac{1}{T*} \sum_{i=1}^n T_i \quad &\text{with } T* \text{ s the last observed time,} \\
+&\text{et } T_i \text{ is the } i\text{-th observed time.} \end{aligned}$$
+
+Moreover, under $H_0$ and conditionally on ${N = n}$, based on Property 2.23 from the course on conditional distributions, we have:
+
+$$(T_1, T_2, ..., T_n) | \{n = N\} \sim (U_{(1)},U_{(2)},..., U_{(n)}, )$$ $$\text{où les } (U_{1},U_{2},..., U_{n}) \text{ sont i.i.d.} \sim U([0,T*])$$
+
+Thus, $\frac{T_i}{T^*}$ follows the same distribution as the $i$-th order statistic $U_{(i)}/T^*$, which is a $U([0,1])$ random variable.
+
+$$\text{Reminder : If }X \sim U([0,1]) \, \text{ then } \; \mathbb{E}[X] = \frac{1}{2} \quad \text{ and } \quad Var(X) = \frac{1}{12}$$
+
+By the Central Limit Theorem: $$ \frac{L-\mathbb{E}[L]}{\sqrt{\mathbb{Var}{(L)}}} =  \frac{\sum_{i=1}^n \frac{T_i}{T*} - \frac{n}{2}}{\sqrt{\frac{n}{12}}} \underset {n \rightarrow +\infty} {\overset L \rightarrow} \mathcal{N}(0,1) $$
+
+This is therefore our pivotal statistic.
+
+-   Rejection zone: $H_0$ is rejected when $L$ is large. Indeed, $\lambda(.)$ is constant under $H_0$, so the $T_i/T^*$ are uniformly distributed over $[0,1]$. However, under $H_1$, $\lambda(.)$ is increasing, meaning the $T_i/T^*$ tend to take larger values. Therefore, $L$ will be larger under $H_1$ than under $H_0$. So $$R_{\alpha} = \{ L > l\}$$.
+
+-   Error of the first order:
+
+$e_\alpha = P_{H_0}\left( L > l \right | \{N=n\}) = P_{H_0}\left( \frac{\sum_{i=1}^n \frac{T_i}{T*} - \frac{n}{2}}{\sqrt{\frac{n}{12}}} > \frac{l - \frac{n}{2}}{\sqrt{\frac{n}{12}}} \right | \{N=n\}) \underset {n \rightarrow +\infty} {\overset L \rightarrow} P(Z > \frac{l - \frac{n}{2}}{\sqrt{\frac{n}{12}}})$
+
+where $Z \sim \mathcal{N}(0,1)$ . And, $$P(Z > \frac{l - \frac{n}{2}}{\sqrt{\frac{n}{12}}}) = 1 - P(Z \le \frac{l - \frac{n}{2}}{\sqrt{\frac{n}{12}}})$$
+
+We are conducting a level alpha test:
+
+Then $$ 1 - P(Z \le \frac{l - \frac{n}{2}}{\sqrt{\frac{n}{12}}}) = \alpha <=> P(Z \le \frac{l - \frac{n}{2}}{\sqrt{\frac{n}{12}}}) = 1 - \alpha  $$
+
+So, $\frac{l - \frac{n}{2}}{\sqrt{\frac{n}{12}}} = z_{1 - \alpha}$ , where $z_{\eta}$ is the $\eta$-quantile of a $\mathcal{N}(0,1)$. Finally, $$l = \sqrt{\frac{n}{12}}z_{1 - \alpha} + \frac{n}{2}$$
+
+-   Conclusion:
+
+The rejection region is given by: $R_{\alpha} = \{L > l\} = \{L > \sqrt{\frac{n}{12}}z_{1 - \alpha} + \frac{n}{2} \} = \{ \frac{L - \frac{n}{2}}{\sqrt{\frac{n}{12}}} > z_{1 - \alpha} \}$
+
+We denote: $X_n = \frac{L - \frac{n}{2}}{\sqrt{\frac{n}{12}}}$ our test statistic.
+
+-   p-value
+
+The p-value is defined as: $\alpha = P_{H_0}(X_n > X_{n}^{obs}) = 1 - P_{H_0}(X_n < X_{n}^{obs})\underset {n \rightarrow +\infty} {\overset L \rightarrow} 1 - \mathcal{F}_{\mathcal{N}(0,1)}(N_{n}^{obs})$
+
+#### I.2 - Weibull test
+
+-   Hypotheses :
+
+We test : $$ H_0 : \lambda(.) \; \text{is constant} \quad \text{versus} \quad H_1 : \lambda(.) \; \text{is increasing}$$
+
+where $\lambda (t) = (\beta / \theta)(t/ \theta)^{\beta - 1}$ .
