@@ -34,7 +34,7 @@ $$\begin{aligned} L = \sum_{i=1}^n \frac{T_i}{T*} = \frac{1}{T*} \sum_{i=1}^n T_
 
 Moreover, under $H_0$ and conditionally on ${N = n}$, based on Property 2.23 from the course on conditional distributions, we have:
 
-$$(T_1, T_2, ..., T_n) | \{n = N\} \sim (U_{(1)},U_{(2)},..., U_{(n)}, )$$ $$\text{où les } (U_{1},U_{2},..., U_{n}) \text{ sont i.i.d.} \sim U([0,T*])$$
+$$(T_1, T_2, ..., T_n) | \{n = N\} \sim (U_{(1)},U_{(2)},..., U_{(n)}, )$$ $$\text{where } (U_{1},U_{2},..., U_{n}) \text{ are i.i.d. r.v} \sim U([0,T*])$$
 
 Thus, $\frac{T_i}{T^*}$ follows the same distribution as the $i$-th order statistic $U_{(i)}/T^*$, which is a $U([0,1])$ random variable.
 
@@ -44,11 +44,11 @@ By the Central Limit Theorem: $$ \frac{L-\mathbb{E}[L]}{\sqrt{\mathbb{Var}{(L)}}
 
 This is therefore our pivotal statistic.
 
--   Rejection zone: $H_0$ is rejected when $L$ is large. Indeed, $\lambda(.)$ is constant under $H_0$, so the $T_i/T^*$ are uniformly distributed over $[0,1]$. However, under $H_1$, $\lambda(.)$ is increasing, meaning the $T_i/T^*$ tend to take larger values. Therefore, $L$ will be larger under $H_1$ than under $H_0$. So $$R_{\alpha} = \{ L > l\}$$.
+-   Rejection zone: $H_0$ is rejected when $L$ is large. Indeed, $\lambda(.)$ is constant under $H_0$, so the $T_i/T^*$ are uniformly distributed over $[0,1]$. However, under $H_1$, $\lambda(.)$ is increasing, meaning the $T_i/T^*$ tend to take larger values. Therefore, $L$ will be larger under $H_1$ than under $H_0$. So $$R_{\alpha} = \{ L > l\}$$
 
 -   Error of the first order:
 
-$e_\alpha = P_{H_0}\left( L > l \right | \{N=n\}) = P_{H_0}\left( \frac{\sum_{i=1}^n \frac{T_i}{T*} - \frac{n}{2}}{\sqrt{\frac{n}{12}}} > \frac{l - \frac{n}{2}}{\sqrt{\frac{n}{12}}} \right | \{N=n\}) \underset {n \rightarrow +\infty} {\overset L \rightarrow} P(Z > \frac{l - \frac{n}{2}}{\sqrt{\frac{n}{12}}})$
+$e_1 = P_{H_0}\left( L > l \right | \{N=n\}) = P_{H_0}\left( \frac{\sum_{i=1}^n \frac{T_i}{T*} - \frac{n}{2}}{\sqrt{\frac{n}{12}}} > \frac{l - \frac{n}{2}}{\sqrt{\frac{n}{12}}} \right | \{N=n\}) \underset {n \rightarrow +\infty} {\overset L \rightarrow} P(Z > \frac{l - \frac{n}{2}}{\sqrt{\frac{n}{12}}})$
 
 where $Z \sim \mathcal{N}(0,1)$ . And, $$P(Z > \frac{l - \frac{n}{2}}{\sqrt{\frac{n}{12}}}) = 1 - P(Z \le \frac{l - \frac{n}{2}}{\sqrt{\frac{n}{12}}})$$
 
@@ -64,14 +64,60 @@ The rejection region is given by: $R_{\alpha} = \{L > l\} = \{L > \sqrt{\frac{n}
 
 We denote: $X_n = \frac{L - \frac{n}{2}}{\sqrt{\frac{n}{12}}}$ our test statistic.
 
--   p-value
+-   p-value:
 
-The p-value is defined as: $\alpha = P_{H_0}(X_n > X_{n}^{obs}) = 1 - P_{H_0}(X_n < X_{n}^{obs})\underset {n \rightarrow +\infty} {\overset L \rightarrow} 1 - \mathcal{F}_{\mathcal{N}(0,1)}(N_{n}^{obs})$
+The p-value is defined as: $\alpha = P_{H_0}(X_n > X_{n}^{obs}) = 1 - P_{H_0}(X_n < X_{n}^{obs})\underset {n \rightarrow +\infty} {\overset L \rightarrow} 1 - \mathcal{F}_{\mathcal{N}(0,1)}(X_{n}^{obs})$
+
+where $\mathcal{F}_{\mathcal{N}(0,1)}$ is the cumulative distribution function of a distribution $\mathcal{N}(0,1)$.
 
 #### I.2 - Weibull test
 
--   Hypotheses :
+In this test, we consider $\lambda (t) = (\beta / \theta)(t/ \theta)^{\beta - 1}$ for $\beta, \alpha > 0$. We observe that if $\beta = 1$ we recover the exponential distribution with parameter $\lambda(t) = 1/\theta$ corresponding to the simple Poisson process. If $\beta > 1$, the failure rate increases over time (system wear and tear).
 
-We test : $$ H_0 : \lambda(.) \; \text{is constant} \quad \text{versus} \quad H_1 : \lambda(.) \; \text{is increasing}$$
+-   ​Hypotheses :
 
-where $\lambda (t) = (\beta / \theta)(t/ \theta)^{\beta - 1}$ .
+We test : $$ H_0 : \beta =1 \quad \text{versus} \quad H_1 : \beta > 1$$
+
+-   Statistic: We denote $Z = 2 \sum_{i=1}^n log(T^* / T_i)$, the test statistic proposed in the article.
+
+    Conditionally on $\{N_{T~*} = n\}$, $(T_1, …, T_n)$ behaves as the order statistic associated to n i.i.d. r.v with commun density f:$$f : s \longmapsto \frac{\lambda(s)}{\int_0^{T^*} \lambda(x) dx} \mathbf{1}_{0 < s \le T*} = \frac{\beta}{\theta}(\frac{s}{\theta})^{\beta-1} \frac{1}{\Lambda(T^*)} \mathbf{1}_{0 < s \le T*} =  \frac{\beta s^{\beta - 1}}{\theta^\beta \Lambda(T^*)}  \; \mathbf{1}_{0 < s \le T*}$$
+
+    with $\Lambda(T^*) = \int_0^{T^*} \lambda(x) dx=\int_0^{T^*} \frac{\beta}{\theta}(\frac{x}{\theta})^{\beta-1} dx = \frac{\beta}{\theta^\beta} \int_0^{T*} x^{\beta - 1}dx = \frac{\beta}{\theta^\beta} \bigg[\frac{x^\beta}{\beta}\bigg]_0^{T*} = (\frac{T^*}{\theta})^{\beta}$
+
+Consequently, $f(s) = \frac{\beta s^{\beta - 1}}{\theta^{\beta} \frac{(T^*)^{\beta}}{\theta^{\beta}}} \; \mathbf{1}_{0 < s \le T*} = \frac{\beta s^{\beta - 1}}{T^*} \; \mathbf{1}_{0 < s \le T*}$
+
+To determine the distribution of $Z$, we calculate its moment-generating function.
+
+$$ \mathcal{L}_Z(u) = \mathbb{E}[e^{uZ} | \;\{N_{T^*} = n \}\;]$$
+
+We recall that $$ (T_1, T_2, ..., T_n \;| \; \{N_T = n \}) =^{(d)} (U_{(1)}, U_{(2)}, \; ... \;, U_{(n)})$$
+
+where $U_i$ are **i.i.d.** r.v and of density $f$ defined above.
+
+Therefore, $$\mathcal{L}_Z(u) = \mathbb{E}\bigg[e^{u \,2 \sum_{i=1}^n ln \big(\frac{T*}{T_i}\big)}\bigg | \;\{N_T = n \}\;] \\ = \mathbb{E}\bigg[e^{u \,2 \sum_{i=1}^n ln \big(\frac{T*}{U_{(i)}}\big)}\bigg ] \\ = \mathbb{E}\bigg[e^{u \,2 \sum_{i=1}^n ln \big(\frac{T*}{U_i}\big)}\bigg ] \\ = \mathbb{E}\bigg[ \prod_{i=1}^n e^{u \,2 ln \big(\frac{T*}{U_i}\big)}\bigg ]\\ = \mathbb{E}\bigg[ \prod_{i=1}^n  (\frac{T*}{U_i})^{2u}\bigg ]\\ = (\mathbb{E}\bigg[ (\frac{T*}{U_1})^{2u} \bigg])^n $$ and,
+
+$$  \mathbb{E}\bigg[ (\frac{T*}{U_1})^{2u} \bigg] = \int_{\mathbb{R}} (\frac{T^*}{x})^{2u} \frac{\beta x^{\beta -1}}{T*^{\beta}} \mathbf{1}_{0 < x \le T^*} dx\\ = T^{ * 2u - \beta} \beta \int_0^{T^*} \frac{x^{\beta -1}}{x^{2u}} dx \\ = T^{ * 2u - \beta} \beta \bigg[\frac{x^{\beta - 2u}}{\beta -2u} \bigg]_0^{T^*} \\ = T^{ * 2u - \beta} \beta \frac{T^{ * 2u - \beta}}{\beta - 2u} \\ = \frac{\beta}{\beta - 2u} $$ Then, $(\mathbb{E}\bigg[ (\frac{T*}{U_1})^{2u} \bigg])^n = (\frac{\beta}{\beta - 2u})^n$
+
+Finally, under $H_0$, $\beta = 1$, we have, $\mathcal{L}_Z(u) = (\frac{1}{1 - 2u})^n = (\frac{\frac{1}{2}}{\frac{1}{2} - u})^n$
+
+Here we recognise the generating function of the moments of a Gamma distribution $\Gamma(n, 1/2)$ Moreover, by a property of the course, $\Gamma(n, 1/2) =^{(d)}\chi^2(2n)$ which is the law of Z under $H_0$.
+
+-   Rejection zone: We reject $H_0$ when $Z$ is significantly small, as the reasoning is reversed compared to the previous test due to the use of the reciprocal ratio. Therefore, $$R_{\alpha} = \{ Z < s_{\alpha}\}$$
+
+-   Error of first order:
+
+    $e_1 = P_{H_0}(Z < s_{\alpha} | N = n) = P_{H_0}(2 \sum_{i=1}^n log(T^* / T_i) < s_{\alpha} | N= n) = P(X < s_{\alpha})$ where $X \sim \chi^2(2n)$
+
+    We are conducting a level alpha test:
+
+    Then, $$P(X < s_{\alpha}) \Leftrightarrow \mathbb{P}(X < x_{2n, \alpha}) \le \alpha$$ $\text{and} \quad x_{2n, \alpha} \text{ is the } \alpha -\text{quantile of a } \chi^2(2n)$
+
+-   Conclusion:
+
+    The rejection region is given by: $R_{\alpha}=\{Z < x_{2n, \alpha} \}$ and $Z$ is our test statistic.
+
+-   p-value:
+
+The p-value is defined as: $$\hat{\alpha} = \mathbb{P}_{H_0}(Z<Z^{obs}) = \mathcal{F}_{\chi^2(2n)} (Z^{obs})$$
+
+where $\mathcal{F}_{\chi^2(2n)}$ is the cumulative distribution function of a distribution $\chi^2(2n)$
