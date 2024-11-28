@@ -1,0 +1,94 @@
+# Application numérique des tests
+
+## Création de deux jeux de données
+
+### Dannish Fire insurance data
+
+```{r}
+library(evir)
+data("danish") 
+times<-attr(danish,"times")
+ref<-min(times)
+day_ecart<-as.numeric(times-ref,units="days")+1
+day_max<-max(day_ecart)
+```
+
+```{r}
+plot.PP<- function(PP)
+{
+  # plot the counting process (with jumps of size 1 (starting at point (0,0))):
+  plot(c(0,PP),0:length(PP),type="s",xlab="Day d",ylab="number of events by Day d")
+  # add the arrival times on the horizontal axis: 
+  points(PP,0*PP,type="p",pch=16)
+  # link arrival times with the counts:
+  lines(PP,0:(length(PP)-1),type="h",lty=2)
+}
+```
+
+```{r}
+# Simulation and plot of a homogeneous Poisson process:
+plot.PP(day_ecart)
+```
+
+## Test de Laplace
+
+```{r}
+laplace_stat <- function(arrival_times, T_max) {
+  n <- length(arrival_times)
+  Y <- sum(arrival_times)/T_max - (n / 2)
+  Z <- Y / (sqrt(n / 12))
+  return(Z)
+}
+
+laplace_test <- function(arrival_times, T_max,alpha){
+  X = laplace_stat(arrival_times, T_max)
+  pval = 1 - pnorm(X)
+  rejete_h0 = (pval < alpha)
+  to_return = c(X,pval,rejete_h0)
+  return(to_return)
+}
+```
+
+```{r}
+set.seed(18) 
+T_max = day_max
+alpha = 0.05
+```
+
+```{r}
+res = laplace_test(day_ecart,T_max,alpha)
+print(paste("Rejet de H0 :",res[3]))
+print(paste("Stat de test :",res[1]))
+print(paste("pvaleur :",res[2]))
+```
+
+## Test de Weibull
+
+```{r}
+weibull_stat <- function(arrival_times, T_max) {
+  Z <- 2*sum(log(T_max/arrival_times))
+  return(Z)
+}
+
+weibull_test <- function(arrival_times, T_max,alpha){
+  Zobs = weibull_stat(arrival_times, T_max)
+  n=length(arrival_times)
+  pval = pchisq(Zobs, df = 2 * n)
+  rejete_h0 = (pval < alpha)
+  to_return = c(Zobs,pval,rejete_h0)
+  return(to_return)
+}
+```
+
+```{r}
+set.seed(18) 
+T_max = day_max
+alpha = 0.05
+```
+
+```{r}
+res = weibull_test(day_ecart,T_max,alpha)
+print(paste("Rejet de H0 :",res[3]))
+print(paste("Stat de test :",res[1]))
+print(paste("pvaleur :",res[2]))
+```
