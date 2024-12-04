@@ -1,8 +1,9 @@
 ---
-title: "Testing for homogeneity of a Poisson process"
+title: " Poisson Process Project - Testing for homogeneity of a Poisson process"
 author: "Ewan DeQuillacq - Tristan Gay - Clément Gris"
 date: "2024"
 output: pdf_document
+latex_engine: xelatex
 ---
 
 ## Introduction
@@ -13,15 +14,42 @@ In this project, we focus on a specific problem related to homogeneous and inhom
 
 This report focuses on the theoretical understanding and experimental validation of statistical tests designed to assess this homogeneity. In particular, we apply these methods to real-world data from large fire insurance claims in Denmark between 1980 and 1990, to determine whether an HPP or NHPP model is more appropriate.
 
-## I - Construction of tests
+## I - Definition and construction of tests
 
-In the first part of this report, we will focus on the theoretical study of tests described in the first reference article: **Lee J Bain, Max Engelhardt, and FT Wright. Tests for an increasing trend in the intensity of a Poisson process: A power study. Journal of the American Statistical Association, 80(390):419--422, 1985**. **[1]**
+\
+In the first part of this report, we will focus on the theoretical study of the tests described in the first reference article [1].
 
-We will demonstrate the mathematical constructions underlying these tests, highlighting the assumptions and fundamental properties of homogeneous Poisson processes. We will carry out the construction of hypothesis tests for the Laplace and Weibull distributions.
+We will define and explore both homogeneous and inhomogeneous Poisson processes mathematically, outlining their assumptions and fundamental properties. Additionally, we will demonstrate the mathematical constructions underlying these tests, particularly for the Laplace and Weibull distributions, and examine the hypotheses associated with these models.
 
-#### **I.1 - Laplace test**
+#### I.1 - Definitions
 
--   Hypotheses :
+\
+***Homogeneous Poisson process:***
+
+Let $N = (N_t)_t$ be a counting process representing the total number of events that have occurred up to time $t$. A point process $N$ is a *homogeneous Poisson process* with rate $\lambda > 0$ if:
+
+-   $N_0 = 0$
+
+-   Independent increments: The number of points in disjoint time intervals are independent.
+
+-   Stationary increments: The distribution of the number of points in any time interval depends only on the length of the interval, not its position.
+
+    We denote this process as $N \sim \mathcal{P}(\lambda t)$.
+
+***Inhomogeneous Poisson process:***
+
+In the same way, an *inhomogeneous Poisson process* with intensity function $\lambda$ is defined as follows:
+
+-   $N_0 = 0$
+
+-   The increments are independent.
+
+    We denote this process as $N \sim \mathcal{P}\left( \int_0^t \lambda(x) \, dx \right)$.
+
+#### I.2 - Laplace test
+
+\
+- Hypotheses :
 
 We test : $$ H_0 : \lambda(.) \; \text{is constant} \quad \text{versus} \quad H_1 : \lambda(.) \; \text{is increasing}$$
 
@@ -48,7 +76,7 @@ This is therefore our pivotal statistic.
 
 -   Error of the first order:
 
-$e_1 = P_{H_0}\left( L > l \right | \{N=n\}) = P_{H_0}\left( \frac{\sum_{i=1}^n \frac{T_i}{T*} - \frac{n}{2}}{\sqrt{\frac{n}{12}}} > \frac{l - \frac{n}{2}}{\sqrt{\frac{n}{12}}} \right | \{N=n\}) \underset {n \rightarrow +\infty} {\overset L \rightarrow} P(Z > \frac{l - \frac{n}{2}}{\sqrt{\frac{n}{12}}})$
+$e_1 = P_{H_0}\left( L > l \right | \{N=n\}) = P_{H_0}\left( \frac{\sum_{i=1}^n \frac{T_i}{T*} - \frac{n}{2}}{\sqrt{\frac{n}{12}}} > \frac{l - \frac{n}{2}}{\sqrt{\frac{n}{12}}} | \{N=n\} \right) \underset {n \rightarrow +\infty} {\overset L \rightarrow} P(Z > \frac{l - \frac{n}{2}}{\sqrt{\frac{n}{12}}})$
 
 where $Z \sim \mathcal{N}(0,1)$ . And, $$P(Z > \frac{l - \frac{n}{2}}{\sqrt{\frac{n}{12}}}) = 1 - P(Z \le \frac{l - \frac{n}{2}}{\sqrt{\frac{n}{12}}})$$
 
@@ -70,8 +98,9 @@ The p-value is defined as: $\alpha = P_{H_0}(X_n > X_{n}^{obs}) = 1 - P_{H_0}(X_
 
 where $\mathcal{F}_{\mathcal{N}(0,1)}$ is the cumulative distribution function of a distribution $\mathcal{N}(0,1)$.
 
-#### I.2 - Weibull test
+#### I.3 - Weibull test
 
+\
 In this test, we consider $\lambda (t) = (\beta / \theta)(t/ \theta)^{\beta - 1}$ for $\beta, \theta > 0$. We observe that if $\beta = 1$ we recover the exponential distribution with parameter $\lambda(t) = 1/\theta$ corresponding to the simple Poisson process. If $\beta > 1$, the failure rate increases over time (system wear and tear).
 
 -   ​Hypotheses :
@@ -94,7 +123,9 @@ We recall that $$ (T_1, T_2, ..., T_n \;| \; \{N_T = n \}) =^{(d)} (U_{(1)}, U_{
 
 where $U_i$ are **i.i.d.** r.v and of density $f$ defined above.
 
-Therefore, $$\mathcal{L}_Z(u) = \mathbb{E}\bigg[e^{u \,2 \sum_{i=1}^n ln \big(\frac{T*}{T_i}\big)}\bigg | \;\{N_T = n \}\;] \\ = \mathbb{E}\bigg[e^{u \,2 \sum_{i=1}^n ln \big(\frac{T*}{U_{(i)}}\big)}\bigg ] \\ = \mathbb{E}\bigg[e^{u \,2 \sum_{i=1}^n ln \big(\frac{T*}{U_i}\big)}\bigg ] \\ = \mathbb{E}\bigg[ \prod_{i=1}^n e^{u \,2 ln \big(\frac{T*}{U_i}\big)}\bigg ]\\ = \mathbb{E}\bigg[ \prod_{i=1}^n  (\frac{T*}{U_i})^{2u}\bigg ]\\ = (\mathbb{E}\bigg[ (\frac{T*}{U_1})^{2u} \bigg])^n $$ and,
+Therefore, $$\mathcal{L}_Z(u) = \mathbb{E}\left[e^{u \, 2 \sum_{i=1}^n \ln \left(\frac{T^*}{T_i}\right)} \Big| \; \{N_T = n \}\right] \\$$ $$= \mathbb{E}\left[e^{u \, 2 \sum_{i=1}^n \ln \left(\frac{T^*}{U_{(i)}}\right)} \right] \\$$ $$= \mathbb{E}\left[e^{u \, 2 \sum_{i=1}^n \ln \left(\frac{T^*}{U_i}\right)} \right] \\$$ $$= \mathbb{E}\left[ \prod_{i=1}^n e^{u \, 2 \ln \left(\frac{T^*}{U_i}\right)} \right] \\$$ $$= \mathbb{E}\left[ \prod_{i=1}^n \left(\frac{T^*}{U_i}\right)^{2u} \right] \\$$ $$= \left(\mathbb{E}\left[ \left(\frac{T^*}{U_1}\right)^{2u} \right]\right)^n$$
+
+and,
 
 $$  \mathbb{E}\bigg[ (\frac{T*}{U_1})^{2u} \bigg] = \int_{\mathbb{R}} (\frac{T^*}{x})^{2u} \frac{\beta x^{\beta -1}}{T*^{\beta}} \mathbf{1}_{0 < x \le T^*} dx \\
 = T^{ * 2u - \beta} \beta \int_0^{T^*} \frac{x^{\beta -1}}{x^{2u}} dx \\ 
@@ -128,18 +159,20 @@ where $\mathcal{F}_{\chi^2(2n)}$ is the cumulative distribution function of a di
 
 ## II - Numerical study
 
+\
 In this section, we digitally construct the previously developed Laplace and Weibull tests. We analyze the outcomes of these constructions by verifying the alpha levels of the tests and then compare their performance in terms of power.
 
 #### II.1.a - Poisson processes simulation
 
+\
 Here, we are building the functions that allow us to construct homogeneous and inhomogeneous Poisson processes.
 
 ```{r}
 # Homogeneous Poisson process
-simulPPh1 <- function(lambda,Tmax)
+simulPPh1 <- function(lambda,T_max,fixed_n=-1)
 {
-  nmax= rpois(1, lambda*Tmax)
-  uniformes <- runif(nmax, min = 0, max = Tmax)
+  if (fixed_n==-1) fixed_n= rpois(1, lambda*T_max)
+  uniformes <- runif(fixed_n, min = 0, max = T_max)
   temps_arrive = sort(uniformes)
 
   return(temps_arrive)
@@ -157,10 +190,19 @@ simulPPi = function(lambda_fct,Tmax,M)
   to_return = sort(PPh[unif < val_fct_lamb])
   return(to_return)
 }
+
+#Like in the article
+simulPPi_asarticle = function(lambda_fct,lambda_inv,T_max,n)
+{
+  unif = sort(runif(n,0,lambda_fct(T_max)))
+  to_return = lambda_inv(unif)
+  return(to_return)
+}
 ```
 
 #### II.1.b - Laplace test
 
+\
 We define the function that calculates our test statistic and applies the test to the arrival times of a homogeneous or inhomogeneous Poisson process.
 
 ```{r}
@@ -199,8 +241,8 @@ In this case, for a process with a constant intensity function, we do not reject
 ```{r}
 lambda_fct1 <- function(t){return(2*t)}
 
-M1=2*Tmax
-PPi1 = simulPPi(lambda_fct1,Tmax,M1)
+M1=2*T_max
+PPi1 = simulPPi(lambda_fct1,T_max,M1)
 
 res = laplace_test(PPi1,T_max,alpha)
 print(paste("Rejection of H_0:", as.logical(res[3])))
@@ -208,12 +250,25 @@ print(paste("Statistical test observed:",res[1]))
 print(paste("p-value:",res[2]))
 ```
 
-In this case, we consider an inhomogeneous Poisson process with an increasing intensity function $λ(t)= 2t$. We observe a p-value less than 0.05, so we reject $H_0$ at the 5% significance level. This is also the expected result.
+```{r}
+lambda_fct_prim <- function(t){return(t^2)}
+lambda_inv <- function(t){return(sqrt(t))}
 
-The Laplace tests provide consistent results in the trials we conducted. Let\'s now look at the Weibull tests.
+PPi1 = simulPPi_asarticle(lambda_fct_prim,lambda_inv,T_max,40)
+
+res = laplace_test(PPi1,T_max,alpha)
+print(paste("Rejection of H_0:", as.logical(res[3])))
+print(paste("Statistical test observed:",res[1]))
+print(paste("p-value:",res[2]))
+```
+
+In this case, we consider an inhomogeneous Poisson process with an increasing intensity function $\lambda(t)= 2t$. We observe a p-value less than 0.05, so we reject $H_0$ at the 5% significance level. This is also the expected result.
+
+The Laplace tests provide consistent results in the trials we conducted. Let's now look at the Weibull tests.
 
 #### II.1.c - Weibull tests
 
+\
 Here, we construct our Weibull test statistic from the arrival times as demonstrated in the first part.
 
 ```{r}
@@ -251,9 +306,21 @@ theta = 1
 lambda_fct1 <- function(t){return(lambda_weibull(theta,1,t))}
 
 M1=lambda_weibull(theta,1,T_max)
-PPi1 = simulPPi(lambda_fct1,Tmax,M1)
+PPi1 = simulPPi(lambda_fct1,T_max,M1)
 
 res = weibull_test(PPi1,T_max,alpha)
+print(paste("Rejection of H_0:", as.logical(res[3])))
+print(paste("Statistical test observed:",res[1]))
+print(paste("p-value:",res[2]))
+```
+
+```{r}
+lambda_fct_prim <- function(t){return(t)}
+lambda_inv <- function(t){return(t)}
+
+PPi1 = simulPPi_asarticle(lambda_fct_prim,lambda_inv,T_max,40)
+
+res = laplace_test(PPi1,T_max,alpha)
 print(paste("Rejection of H_0:", as.logical(res[3])))
 print(paste("Statistical test observed:",res[1]))
 print(paste("p-value:",res[2]))
@@ -266,9 +333,21 @@ b=2
 lambda_fct1 <- function(t){return(lambda_weibull(theta,b,t))}
 
 M1=lambda_weibull(theta,b,T_max)
-PPi1 = simulPPi(lambda_fct1,Tmax,M1)
+PPi1 = simulPPi(lambda_fct1,T_max,M1)
 
 res = weibull_test(PPi1,T_max,alpha)
+print(paste("Rejection of H_0:", as.logical(res[3])))
+print(paste("Statistical test observed:",res[1]))
+print(paste("p-value:",res[2]))
+```
+
+```{r}
+lambda_fct_prim <- function(t){return((b/2)*t^2)}
+lambda_inv <- function(t){return(sqrt(2*t/b))}
+
+PPi1 = simulPPi_asarticle(lambda_fct_prim,lambda_inv,T_max,40)
+
+res = laplace_test(PPi1,T_max,alpha)
 print(paste("Rejection of H_0:", as.logical(res[3])))
 print(paste("Statistical test observed:",res[1]))
 print(paste("p-value:",res[2]))
@@ -278,14 +357,17 @@ In this second case, we consider an intensity function with $\beta = 2 > 1$, whi
 
 #### II.2 - Comparison of tests
 
+\
 In this section, we study the power of the different tests. The function `calculate_power` takes as arguments a test function, the number of simulations to perform in order to estimate the power, and the necessary arguments for the functions performing the test (last arrival time, upper bound of the intensity function, and the intensity function itself).
 
+# INTERPRETATIONS A FAIRE
+
 ```{r}
-calculate_power <- function(test,n_sim, T_max, borne_sup,lambda_func, alpha = 0.05) {
+calculate_power <- function(test,n_sim, T_max, lambda_func,lambda_inv, n, alpha = 0.05) {
   rejections <- 0
   ntot = 0
   for (i in 1:n_sim) {
-    PPi1 = simulPPi(lambda_func,T_max,borne_sup) 
+    PPi1 = simulPPi_asarticle(lambda_func,lambda_inv,T_max,n)
     Z <- test(PPi1, T_max,alpha)
     if (!is.nan(Z[3]) && !is.na(Z[3])){
       if (Z[3]) {
@@ -293,124 +375,147 @@ calculate_power <- function(test,n_sim, T_max, borne_sup,lambda_func, alpha = 0.
       }
       }
   }
-  return(rejections / n_sim)
-}
+  return(rejections / n_sim)}
 ```
 
-First, we fix $\theta$ at 1 and vary $\beta$. We display the evolution of the power for the Laplace and Weibull tests according to different values of $\beta$.
-
 ```{r}
-beta_list = c(1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0)
-T_max =10
-n_sim=10000
-
-powers_laplace = c()
-powers_weibull = c()
+library(ggplot2)
+beta_list = c(1.0, 2.0, 4.0)
+n_list = c(10, 20, 40)
+T_max = 1
+n_sim = 5000
 
 for (b in beta_list) {
-  lambda_fct <- function(t){return(lambda_weibull(1,b,t))}
-  M=lambda_fct(Tmax)
-  powers_laplace[length(powers_laplace) + 1] <- calculate_power(laplace_test,n_sim, T_max, M, lambda_fct)
-  powers_weibull[length(powers_weibull) + 1] <- calculate_power(weibull_test,n_sim, T_max, M, lambda_fct)
+  powers_laplace = c()
+  powers_weibull = c()
+  
+  for (n in n_list) {
+    lambda_func <- function(t) {
+      return(t^b) 
+    }
+    lambda_inv <- function(y){
+      return(y^(1/b))
+    }
+    powers_laplace[length(powers_laplace) + 1] <- calculate_power(laplace_test, n_sim, T_max,lambda_func,lambda_inv, n)
+    powers_weibull[length(powers_weibull) + 1] <- calculate_power(weibull_test, n_sim, T_max, lambda_func,lambda_inv, n)
+  }
+  
+  # Convertir en data frame
+  df <- data.frame(x = n_list, Laplace = powers_laplace, Weibull = powers_weibull)
+  df_long <- tidyr::pivot_longer(df, cols = c("Laplace", "Weibull"), 
+                                 names_to = "Distribution", 
+                                 values_to = "Power")
+  
+  # Créer le graphique
+  plot <- ggplot(df_long, aes(x = x, y = Power, color = Distribution, group = Distribution)) +
+    geom_point(size = 3) +
+    geom_line() +
+    labs(title = paste("Power for a Linear Lambda (Beta =", b, ")"),
+         x = "Sample Size (n)",
+         y = "Power") +
+    theme_minimal() +
+    scale_color_manual(values = c("blue", "red"))  # Personnaliser les couleurs
+  
+  # Afficher le graphique
+  print(plot)
 }
 
-# Convertir en data frame
-df <- data.frame(x = beta_list, Laplace = powers_laplace,Weibull = powers_weibull)
-df_long <- tidyr::pivot_longer(df, cols = c("Laplace", "Weibull"), 
-                               names_to = "Distribution", 
-                               values_to = "Power")
-
-# Créer le graphique
-ggplot(df_long, aes(x = x, y = Power, color = Distribution, group = Distribution)) +
-  geom_point(size = 3) +
-  geom_line() +
-  labs(title = "Power as function of Beta",
-       x = "Beta",
-       y = "Power") +
-  theme_minimal() +
-  scale_color_manual(values = c("blue", "red"))  
 ```
-
-We observe that the Weibull test has a power that increases slightly more rapidly than the Laplace test. However, the powers of both tests are similar for the same values of $\beta$.
-
-In the second step, we fix the value of $\beta$ at 2 and vary the value of $\theta$. We choose values of $\theta$ such that the intensity function is equivalent to a linear function.
 
 ```{r}
-coef_list = c(0.01,0.1,0.2,0.3,0.4,0.5,0.6,1,2)
-T_max =10
-n_sim=1000
+t_list = c(1.0, 2.0, 4.0)
+n_list = c(10, 20, 40)
+n_sim = 5000
 
-powers_laplace = c()
-powers_weibull = c()
-
-for (coeff in coef_list) {
-  lambda_fct <- function(t){return(lambda_weibull(sqrt(2 / coeff),2,t))} # équivalent à lambda(t) = coeff * t
-  M=lambda_fct(Tmax)
-  powers_laplace[length(powers_laplace) + 1] <- calculate_power(laplace_test,n_sim, T_max, M, lambda_fct)
-  powers_weibull[length(powers_weibull) + 1] <- calculate_power(weibull_test,n_sim, T_max, M, lambda_fct)
+for (T_max in t_list) {
+  powers_laplace = c()
+  powers_weibull = c()
+  
+  for (n in n_list) {
+    lambda_func <- function(t) {
+      return(exp(t)-1) 
+    }
+    lambda_inv <- function(y){
+      return(log(y+1))
+    }
+    powers_laplace[length(powers_laplace) + 1] <- calculate_power_asarticle(laplace_test, n_sim, T_max,lambda_func,lambda_inv, n)
+    powers_weibull[length(powers_weibull) + 1] <- calculate_power_asarticle(weibull_test, n_sim, T_max, lambda_func,lambda_inv, n)
+  }
+  
+  # Convertir en data frame
+  df <- data.frame(x = n_list, Laplace = powers_laplace, Weibull = powers_weibull)
+  df_long <- tidyr::pivot_longer(df, cols = c("Laplace", "Weibull"), 
+                                 names_to = "Distribution", 
+                                 values_to = "Power")
+  
+  # Créer le graphique
+  plot <- ggplot(df_long, aes(x = x, y = Power, color = Distribution, group = Distribution)) +
+    geom_point(size = 3) +
+    geom_line() +
+    labs(title = paste("Power for an exponential Lambda (T_max =", T_max, ")"),
+         x = "Sample Size (n)",
+         y = "Power") +
+    theme_minimal() +
+    scale_color_manual(values = c("blue", "red"))  # Personnaliser les couleurs
+  
+  # Afficher le graphique
+  print(plot)
 }
-library(ggplot2)
-
-# Convertir en data frame
-df <- data.frame(x = coef_list, Laplace = powers_laplace,Weibull = powers_weibull)
-df_long <- tidyr::pivot_longer(df, cols = c("Laplace", "Weibull"), 
-                               names_to = "Distribution", 
-                               values_to = "Power")
-
-# Créer le graphique
-ggplot(df_long, aes(x = x, y = Power, color = Distribution, group = Distribution)) +
-  geom_point(size = 3) +
-  geom_line() +
-  labs(title = "Power for a Linear Lambda",
-       x = "Linearity Coefficients",
-       y = "Power") +
-  theme_minimal() +
-  scale_color_manual(values = c("blue", "red")) 
 ```
-
-The results obtained are similar in terms of interpretation to the previous ones. Indeed, the power of the Weibull tests is slightly higher for a fixed $\beta$.
-
-Now, we fix $\beta$ at 3 and vary $\theta$ such that the intensity function is quadratic.
 
 ```{r}
-coef_list = c(0.01,0.02,0.03,0.04,0.05,0.07,0.08,0.1)
-T_max =10
-n_sim=1000
+to_list = c(1/3, 1/2, 2/3)
+n_list = c(10, 20, 40)
+n_sim = 1000
+T_max=1
 
-powers_laplace = c()
-powers_weibull = c()
+for (to in to_list) {
+  powers_laplace = c()
+  powers_weibull = c()
+  
+  for (n in n_list) {
 
-for (coeff in coef_list) {
-  lambda_fct <- function(t){return(lambda_weibull((3 / coeff)^(1 / 3),3,t))} # équivalent à lambda(t) = coeff * t²
-  M=lambda_fct(Tmax)
-  powers_laplace[length(powers_laplace) + 1] <- calculate_power(laplace_test,n_sim, T_max, M, lambda_fct)
-  powers_weibull[length(powers_weibull) + 1] <- calculate_power(weibull_test,n_sim, T_max, M, lambda_fct)
+    lambda_func <- function(t) {
+      return(ifelse(t > to, 2*t - to, t)) 
+    }
+    lambda_inv <- function(y){
+      return(ifelse(y > to,(y + to)/2, y))
+    }
+    powers_laplace[length(powers_laplace) + 1] <- calculate_power(laplace_test, n_sim, T_max,lambda_func,lambda_inv, n)
+    powers_weibull[length(powers_weibull) + 1] <- calculate_power(weibull_test, n_sim, T_max, lambda_func,lambda_inv, n)
+  }
+  
+  # Convertir en data frame
+  df <- data.frame(x = n_list, Laplace = powers_laplace, Weibull = powers_weibull)
+  df_long <- tidyr::pivot_longer(df, cols = c("Laplace", "Weibull"), 
+                                 names_to = "Distribution", 
+                                 values_to = "Power")
+  
+  # Créer le graphique
+  plot <- ggplot(df_long, aes(x = x, y = Power, color = Distribution, group = Distribution)) +
+    geom_point(size = 3) +
+    geom_line() +
+    labs(title = paste("Power for an step function intensity (Tho =", to, ")"),
+         x = "Sample Size (n)",
+         y = "Power") +
+    theme_minimal() +
+    scale_color_manual(values = c("blue", "red"))  # Personnaliser les couleurs
+  
+  # Afficher le graphique
+  print(plot)
 }
-
-# Convertir en data frame
-df <- data.frame(x = coef_list, Laplace = powers_laplace,Weibull = powers_weibull)
-df_long <- tidyr::pivot_longer(df, cols = c("Laplace", "Weibull"), 
-                               names_to = "Distribution", 
-                               values_to = "Power")
-
-# Créer le graphique
-ggplot(df_long, aes(x = x, y = Power, color = Distribution, group = Distribution)) +
-  geom_point(size = 3) +
-  geom_line() +
-  labs(title = "Power for a t squared lambda",
-       x = "Coefficients of the t squared",
-       y = "Power") +
-  theme_minimal() +
-  scale_color_manual(values = c("blue", "red"))
 ```
-
-For this value of $\beta$, the power increases so rapidly that we need to use small values for the coefficient in front of the intensity function. We observe that the powers are very similar, but there is still a slight difference in favor of the Weibull test.
 
 ## III - Application on Danish fires
 
+\
 Finally, we apply the homogeneity tests to a real-world dataset consisting of large fire insurance claims in Denmark recorded between 1980 and 1990. This dataset, available in the *evir* R-package under the name "danish," includes the dates of each observation, allowing for a practical evaluation of the tests' performance.
 
 These data represent large fire insurance claims in Denmark, spanning from Thursday, January 3rd, 1980, to Monday, December 31st, 1990. The claims are stored in a numeric vector, with the corresponding dates provided in a `times` attribute, an object of class `POSIXct` (refer to `DateTimeClasses` in R). The dataset was supplied by Mette Rytgaard from Copenhagen Re. It is important to note that these claims constitute an irregular time series.
+
+Why can we consider that fires follow a Poisson process?
+
+We assume that at time $t_0$, no fires have occurred, so $N_0=0$. Furthermore, we hypothesize that the occurrence of one fire does not affect the likelihood of another fire occurring, ensuring that the increments of the process are independent. These assumptions align with the fundamental properties of a Poisson process, making it a suitable model for this phenomenon.
 
 ```{r}
 library(evir)
@@ -419,18 +524,64 @@ library(ggplot2)
 data("danish")
 
 times <- attr(danish, "times")
-
 years <- format(times, "%Y")
 
 fire_counts <- table(years)
-fire_data <- data.frame(Year = as.numeric(names(fire_counts)), Count = as.numeric(fire_counts))
+all_years <- seq(min(as.numeric(names(fire_counts))), max(as.numeric(names(fire_counts))))
+
+fire_data <- data.frame(Year = all_years, 
+                        Count = as.numeric(fire_counts[as.character(all_years)]))
+fire_data$Count[is.na(fire_data$Count)] <- 0
+
 
 ggplot(fire_data, aes(x = Year, y = Count)) +
   geom_bar(stat = "identity", fill = "skyblue", color = "black") +
   geom_text(aes(label = Count), vjust = -0.3, size = 3.5) +
+  scale_x_continuous(breaks = all_years) + # Afficher toutes les années
   labs(title = "Number of Fire Insurance Claims Over Time",
        x = "Year",
-       y = "Number of Claims")
+       y = "Number of Claims") 
+
 ```
 
 The bar chart shows the annual number of large fire insurance claims in Denmark from 1980 to 1990, highlighting fluctuations over the decade. The number of claims was relatively stable in the early 1980s, ranging from 166 to 181, before dipping to a low of 153 in 1984. This was followed by a sharp increase, peaking at 238 claims in 1986, the highest during the period. The latter half of the decade remained consistently high, with minor fluctuations. Overall, the trend suggests increasing claim activity over time, possibly influenced by external factors such as changing reporting practices, economic conditions, or environmental events.
+
+Let us study the behavior of our intensity function using the Laplace and Weibull tests constructed in the first part. First, we extract the maximum time value from our data. To prevent potential issues in subsequent calculations, we shift each time value by one unit using the following code.
+
+```{r}
+times<-attr(danish,"times")
+ref<-min(times)
+day_ecart<-as.numeric(times-ref,units="days") + 1
+day_max<-max(day_ecart) 
+```
+
+We now apply our tests to the data we have just retrieved:
+
+```{r}
+set.seed(18) 
+T_max = day_max
+alpha = 0.05
+res = laplace_test(day_ecart,T_max,alpha)
+print(paste("(Laplace) Rejection of H_0:", as.logical(res[3])))
+print(paste("(Laplace) Statistical test observed:",res[1]))
+print(paste("(Laplace) p-value:",res[2]))
+```
+
+In the context of the Laplace test, we reject $H_0$ at a 5% significance level. This suggests that the intensity function is increasing.
+
+These results provide strong evidence supporting the hypothesis of an increasing intensity function.
+
+```{r}
+res = weibull_test(day_ecart,T_max,alpha)
+print(paste("(Weibull) Rejection of H_0:", as.logical(res[3])))
+print(paste("(Weibull) Statistical test observed:",res[1]))
+print(paste("(Weibull) p-value:",res[2]))
+```
+
+For the Weibull test, we also reject $H_0$ at a 5% significance level with certainty. Therefore, the intensity function can be assumed to be increasing.
+
+In conclusion, based on the Danish fires dataset, the results of the Laplace and Weibull tests consistently indicate that the intensity function is increasing. This suggests a growing frequency of large fire insurance claims over the observed period. These findings highlight the non-homogeneous nature of the underlying process and demonstrate the practical utility of the proposed tests in real-world applications.
+
+## Conclusion
+
+####  *References* [1] Lee J Bain, Max Engelhardt, and FT Wright. "Tests for an increasing trend in the intensity of a Poisson process: A power study*". Journal of the American Statistical Association*, 80(390):419--422, 1985.

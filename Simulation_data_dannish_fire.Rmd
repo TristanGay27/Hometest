@@ -9,7 +9,7 @@ library(evir)
 data("danish") 
 times<-attr(danish,"times")
 ref<-min(times)
-day_ecart<-as.numeric(times-ref,units="days")+1
+day_ecart<-as.numeric(times-ref,units="days") + 1
 day_max<-max(day_ecart)
 ```
 
