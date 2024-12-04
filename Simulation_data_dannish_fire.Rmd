@@ -30,6 +30,108 @@ plot.PP<- function(PP)
 plot.PP(day_ecart)
 ```
 
+```{r}
+log_likelihood_exp <- function(params) {
+  alpha <- params[1]
+  beta <- params[2]
+  lambda <- function(t) alpha * exp(beta * t)
+  # Log-vraisemblance
+  log_L <- sum(log(lambda(day_ecart))) - integrate(lambda, lower = 0, upper = max(day_ecart))$value
+  return(-log_L)  # Minimiser l'opposé
+}
+params_exp <- optim(par = c(1, 0), log_likelihood_exp)$par
+
+log_likelihood_log <- function(params) {
+  alpha <- params[1]
+  beta <- params[2]
+  lambda <- function(t) alpha * log(1 + beta * t)
+  log_L <- sum(log(lambda(day_ecart))) - integrate(lambda, lower = 0, upper = max(day_ecart))$value
+  return(-log_L)
+}
+params_log <- optim(par = c(1, 1), log_likelihood_log)$par
+
+log_likelihood_two_values <- function(params) {
+  t0 <- params[1]
+  lambda1 <- params[2]
+  lambda2 <- params[3]
+  lambda <- function(t) ifelse(t <= t0, lambda1, lambda2)
+  log_L <- sum(log(sapply(day_ecart, lambda))) - integrate(lambda, lower = 0, upper = max(day_ecart))$value
+  return(-log_L)
+}
+params_two_values <- optim(par = c(mean(day_ecart), 1, 1), log_likelihood_two_values)$par
+
+log_likelihood_weibull <- function(params) {
+  theta <- params[1]
+  beta <- params[2]
+  lambda <- function(t) (beta / theta) * (t / theta)^(beta - 1)
+  log_L <- sum(log(lambda(day_ecart))) - integrate(lambda, lower = 0, upper = max(day_ecart))$value
+  return(-log_L)
+}
+params_weibull <- optim(par = c(1, 1), log_likelihood_weibull)$par
+
+```
+```{r}
+calculate_aic <- function(log_L, k) {
+  return(2 * k - 2 * log_L)
+}
+
+# Calculer l'AIC pour chaque modèle
+aic_exp <- calculate_aic(-log_likelihood_exp(params_exp), 2)
+aic_log <- calculate_aic(-log_likelihood_log(params_log), 2)
+aic_two_values <- calculate_aic(-log_likelihood_two_values(params_two_values), 3)
+aic_weibull <- calculate_aic(-log_likelihood_weibull(params_weibull), 2)
+
+aic_values <- c(aic_exp, aic_log, aic_two_values, aic_weibull)
+names(aic_values) <- c("Exponential", "Logarithmic", "Two Values", "Weibull")
+print(aic_values)
+
+```
+
+```{r}
+# Définir la fonction KS test
+ks_test <- function(model_lambda, day_ecart) {
+  # Calcul des intensités cumulées
+  cumulative_intensity <- function(t) integrate(model_lambda, lower = 0, upper = t)$value
+  cumulative_day_ecart <- sapply(day_ecart, cumulative_intensity)
+  
+  # Test de Kolmogorov-Smirnov
+  ks_result <- ks.test(cumulative_day_ecart, "punif", min = 0, max = max(cumulative_day_ecart))
+  return(ks_result)
+}
+
+# 1. Modèle exponentiel
+model_lambda_exp <- function(t) params_exp[1] * exp(params_exp[2] * t)
+ks_result_exp <- ks_test(model_lambda_exp, day_ecart)
+
+# 2. Modèle logarithmique
+model_lambda_log <- function(t) params_log[1] * log(1 + params_log[2] * t)
+ks_result_log <- ks_test(model_lambda_log, day_ecart)
+
+# 3. Modèle à deux valeurs
+model_lambda_two_values <- function(t) ifelse(t <= params_two_values[1], 
+                                              params_two_values[2], 
+                                              params_two_values[3])
+ks_result_two_values <- ks_test(model_lambda_two_values, day_ecart)
+
+# 4. Modèle Weibull
+model_lambda_weibull <- function(t) (params_weibull[2] / params_weibull[1]) * (t / params_weibull[1])^(params_weibull[2] - 1)
+ks_result_weibull <- ks_test(model_lambda_weibull, day_ecart)
+
+# Affichage des résultats
+cat("KS Test Results:\n")
+ks_result_exp
+ks_result_log
+ks_result_two_values
+ks_result_weibull
+
+
+```
+plus probable : expo ou 2 valeurs (avec un tho aux alentours de 1/2 cf ci-dessous), dans les 2 cas Laplace est préféré
+```{r}
+params_two_values[1]/4000
+```
+
+
 ## Test de Laplace
 
 ```{r}

@@ -623,12 +623,21 @@ for (T_max in t_list) {
     lambda_func <- function(t) {
       return((1 + t) * log(1 + t) - t) 
     }
- 
     
-    lambda_inv <- function(y){
-      optim_res <- optimize(f= (function(x) abs(lambda_func(x) - y)), interval = c(0, 25))
-      return(optim_res$minimum)
-    }
+    lambda_inv <- function(y) {
+        # Fonction d'inversion pour un scalaire
+        inverse_scalar <- function(single_y) {
+          if (lambda_func(0) > single_y || lambda_func(100) < single_y) {
+            stop("The function does not change sign in the interval [0, 100]")
+          }
+          result <- uniroot(function(t) lambda_func(t) - single_y, lower = 0, upper = 100)
+          return(result$root)
+        }
+        # Appliquer à chaque élément de y si y est un vecteur
+        return(sapply(y, inverse_scalar))
+      }
+    
+    
     powers_laplace[length(powers_laplace) + 1] <- calculate_power_asarticle(laplace_test, n_sim, T_max,lambda_func,lambda_inv, n)
     powers_weibull[length(powers_weibull) + 1] <- calculate_power_asarticle(weibull_test, n_sim, T_max, lambda_func,lambda_inv, n)
   }
