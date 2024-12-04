@@ -5,10 +5,10 @@
 ### Simuler un processus de Poisson homogène
 
 ```{r}
-simulPPh1 <- function(lambda,Tmax)
+simulPPh1 <- function(lambda,T_max,fixed_n=-1)
 {
-  nmax= rpois(1, lambda*Tmax)
-  uniformes <- runif(nmax, min = 0, max = Tmax)
+  if (fixed_n==-1) fixed_n= rpois(1, lambda*T_max)
+  uniformes <- runif(fixed_n, min = 0, max = T_max)
   temps_arrive = sort(uniformes)
 
   return(temps_arrive)
@@ -36,9 +36,9 @@ plot.PP(PPh1)
 ### Simuler un processus de Poisson inhomogène avec un $\lambda$ croissant
 
 ```{r}
-simulPPi = function(lambda_fct,Tmax,M)
+simulPPi = function(lambda_fct,T_max,M,fixed_n=-1)
 {
-  PPh = simulPPh1(M,Tmax)
+  PPh = simulPPh1(M,T_max,fixed_n)
   n = length(PPh)
   unif = runif(n,0,M)
   val_fct_lamb = lambda_fct(PPh)
@@ -48,24 +48,37 @@ simulPPi = function(lambda_fct,Tmax,M)
 ```
 
 ```{r}
-Tmax=10
-lambda_fct1 <- function(t){return(3*t)}
+simulPPi_asarticle = function(lambda_fct,lambda_inv,T_max,n)
+{
+  unif = sort(runif(n,0,lambda_fct(T_max)))
+  to_return = lambda_inv(unif)
+  return(to_return)
+}
+```
 
-M1=2*Tmax
-PPi1 = simulPPi(lambda_fct1,Tmax,M1)
+```{r}
+T_max=10
+lambda_fct1 <- function(t){return(t)}
+lambda_fct1_prim <- function(t){return(0.5*t^2)}
+lambda_fct1_inv <- function(t){return(sqrt(t*2))}
+
+M1=2*T_max
+PPi1 = simulPPi(lambda_fct1,T_max,M1)
 print(PPi1)
 # plot:
 par(mfrow=c(1,2))
-curve(lambda_fct1,from=0,to=Tmax,n=1000)
+curve(lambda_fct1,from=0,to=T_max,n=1000)
 plot.PP(PPi1)
+simulPPi_asarticle(lambda_fct1_prim,lambda_fct1_inv,T_max,10)
 ```
 
-## Test de Laplace
+## Test 
+### Laplace
 
 ```{r}
 laplace_stat <- function(arrival_times, T_max) {
   n <- length(arrival_times)
-  Y <- sum(arrival_times)/T_max - (n / 2)
+  Y <- sum(arrival_times/T_max) - (n / 2)
   Z <- Y / (sqrt(n / 12))
   return(Z)
 }
@@ -97,22 +110,40 @@ print(paste("pvaleur :",res[2]))
 ```{r}
 lambda_fct1 <- function(t){return(0.2*t)}
 
-M1=0.2*Tmax
-PPi1 = simulPPi(lambda_fct1,Tmax,M1)
+M1=0.2*T_max
+PPi1 = simulPPi(lambda_fct1,T_max,M1)
 
 res = laplace_test(PPi1,T_max,alpha)
 print(paste("Rejet de H0 :",res[3]))
 print(paste("Stat de test :",res[1]))
 print(paste("pvaleur :",res[2]))
 ```
-
+## power
 ```{r}
-calculate_power <- function(test,n_sim, T_max, borne_sup,lambda_func, alpha = 0.05) {
+calculate_power <- function(test,n_sim, T_max, borne_sup,lambda_func, n =-1, alpha = 0.05) {
   rejections <- 0
   ntot = 0
   for (i in 1:n_sim) {
-    PPi1 = simulPPi(lambda_func,T_max,borne_sup) 
+    PPi1 = simulPPi(lambda_func,T_max,borne_sup,n) 
     Z <- test(PPi1, T_max,alpha)
+    if (!is.nan(Z[3]) && !is.na(Z[3])){
+      if (Z[3]) {
+        rejections <- rejections + 1
+      }
+      }
+  }
+  return(rejections / n_sim)
+}
+
+calculate_power_asarticle <- function(test,n_sim, T_max, lambda_func,lambda_inv, n, alpha = 0.05) {
+  rejections <- 0
+  ntot = 0
+  for (i in 1:n_sim) {
+    PPi1 = simulPPi_asarticle(lambda_func,lambda_inv,T_max,n)
+    Z <- test(PPi1, T_max,alpha)
+    if (i==1){
+      print(PPi1)
+    }
     if (!is.nan(Z[3]) && !is.na(Z[3])){
       if (Z[3]) {
         rejections <- rejections + 1
@@ -126,7 +157,7 @@ calculate_power <- function(test,n_sim, T_max, borne_sup,lambda_func, alpha = 0.
 ```{r}
 T_max =10
 n_sim=1000
-lambda_fct1 <- function(t){return(exp(t))}
+lambda_fct1 <- function(t){return(t+1)}
 M1=exp(T_max)
 
 power = calculate_power(laplace_test,n_sim, T_max, M1,lambda_fct1)
@@ -200,7 +231,7 @@ theta = 1
 lambda_fct1 <- function(t){return(lambda_weibull(theta,1,t))}
 
 M1=lambda_weibull(theta,1,T_max)
-PPi1 = simulPPi(lambda_fct1,Tmax,M1)
+PPi1 = simulPPi(lambda_fct1,T_max,M1)
 
 res = weibull_test(PPi1,T_max,alpha)
 print(paste("Rejet de H0 :",res[3]))
@@ -213,7 +244,7 @@ b=1.5
 lambda_fct1 <- function(t){return(lambda_weibull(theta,b,t))}
 
 M1=lambda_weibull(theta,b,T_max)
-PPi1 = simulPPi(lambda_fct1,Tmax,M1)
+PPi1 = simulPPi(lambda_fct1,T_max,M1)
 
 res = weibull_test(PPi1,T_max,alpha)
 print(paste("Rejet de H0 :",res[3]))
@@ -231,7 +262,7 @@ powers_weibull = c()
 
 for (coeff in coef_list) {
   lambda_fct <- function(t){return(lambda_weibull(sqrt(2 / coeff),2,t))} # équivalent à lambda(t) = coeff * t
-  M=lambda_fct(Tmax)
+  M=lambda_fct(T_max)
   powers_laplace[length(powers_laplace) + 1] <- calculate_power(laplace_test,n_sim, T_max, M, lambda_fct)
   powers_weibull[length(powers_weibull) + 1] <- calculate_power(weibull_test,n_sim, T_max, M, lambda_fct)
 }
@@ -265,7 +296,7 @@ powers_weibull = c()
 
 for (coeff in coef_list) {
   lambda_fct <- function(t){return(lambda_weibull((3 / coeff)^(1 / 3),3,t))} # équivalent à lambda(t) = coeff * t²
-  M=lambda_fct(Tmax)
+  M=lambda_fct(T_max)
   powers_laplace[length(powers_laplace) + 1] <- calculate_power(laplace_test,n_sim, T_max, M, lambda_fct)
   powers_weibull[length(powers_weibull) + 1] <- calculate_power(weibull_test,n_sim, T_max, M, lambda_fct)
 }
@@ -289,7 +320,7 @@ theme_minimal()
 ```
 
 ```{r}
-beta_list = c(1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0)
+beta_list = c(1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0,4.0)
 T_max =10
 n_sim=10000
 
@@ -298,7 +329,7 @@ powers_weibull = c()
 
 for (b in beta_list) {
   lambda_fct <- function(t){return(lambda_weibull(1,b,t))}
-  M=lambda_fct(Tmax)
+  M=lambda_fct(T_max)
   powers_laplace[length(powers_laplace) + 1] <- calculate_power(laplace_test,n_sim, T_max, M, lambda_fct)
   powers_weibull[length(powers_weibull) + 1] <- calculate_power(weibull_test,n_sim, T_max, M, lambda_fct)
 }
@@ -319,4 +350,349 @@ ggplot(df_long, aes(x = x, y = Power, color = Distribution, group = Distribution
   theme_minimal() +
   scale_color_manual(values = c("blue", "red"))  # Personnaliser les couleurs
 theme_minimal()
+```
+
+# on fait les trucs de l'article
+## avec nos fctions
+
+```{r}
+beta_list = c(1.0, 2.0, 4.0)
+n_list = c(10, 20, 40)
+T_max = 1
+n_sim = 5000
+
+for (b in beta_list) {
+  powers_laplace = c()
+  powers_weibull = c()
+  
+  for (n in n_list) {
+    lambda_fct <- function(t) {
+      return(lambda_weibull(1, b, t))  # équivalent à lambda(t) = coeff * t
+    }
+    M = lambda_fct(T_max)
+    powers_laplace[length(powers_laplace) + 1] <- calculate_power(laplace_test, n_sim, T_max, M, lambda_fct, n)
+    powers_weibull[length(powers_weibull) + 1] <- calculate_power(weibull_test, n_sim, T_max, M, lambda_fct, n)
+  }
+  
+  # Convertir en data frame
+  df <- data.frame(x = n_list, Laplace = powers_laplace, Weibull = powers_weibull)
+  df_long <- tidyr::pivot_longer(df, cols = c("Laplace", "Weibull"), 
+                                 names_to = "Distribution", 
+                                 values_to = "Power")
+  
+  # Créer le graphique
+  plot <- ggplot(df_long, aes(x = x, y = Power, color = Distribution, group = Distribution)) +
+    geom_point(size = 3) +
+    geom_line() +
+    labs(title = paste("Power for a Linear Lambda (Beta =", b, ")"),
+         x = "Sample Size (n)",
+         y = "Power") +
+    theme_minimal() +
+    scale_color_manual(values = c("blue", "red"))  # Personnaliser les couleurs
+  
+  # Afficher le graphique
+  print(plot)
+}
+
+
+
+```
+
+```{r}
+t_list = c(1.0, 2.0, 4.0)
+n_list = c(10, 20, 40)
+n_sim = 5000
+
+for (T_max in t_list) {
+  powers_laplace = c()
+  powers_weibull = c()
+  
+  for (n in n_list) {
+    lambda_fct <- function(t) {
+      return(exp(t))  # équivalent à lambda(t) = coeff * t
+    }
+    M = lambda_fct(T_max)
+    powers_laplace[length(powers_laplace) + 1] <- calculate_power(laplace_test, n_sim, T_max, M, lambda_fct, n)
+    powers_weibull[length(powers_weibull) + 1] <- calculate_power(weibull_test, n_sim, T_max, M, lambda_fct, n)
+  }
+  
+  # Convertir en data frame
+  df <- data.frame(x = n_list, Laplace = powers_laplace, Weibull = powers_weibull)
+  df_long <- tidyr::pivot_longer(df, cols = c("Laplace", "Weibull"), 
+                                 names_to = "Distribution", 
+                                 values_to = "Power")
+  
+  # Créer le graphique
+  plot <- ggplot(df_long, aes(x = x, y = Power, color = Distribution, group = Distribution)) +
+    geom_point(size = 3) +
+    geom_line() +
+    labs(title = paste("Power for an exponential Lambda (T_max =", T_max, ")"),
+         x = "Sample Size (n)",
+         y = "Power") +
+    theme_minimal() +
+    scale_color_manual(values = c("blue", "red"))  # Personnaliser les couleurs
+  
+  # Afficher le graphique
+  print(plot)
+}
+
+
+
+```
+
+```{r}
+t_list = c(10, 15, 25)
+n_list = c(10, 20, 40)
+n_sim = 5000
+
+for (T_max in t_list) {
+  powers_laplace = c()
+  powers_weibull = c()
+  
+  for (n in n_list) {
+    lambda_fct <- function(t) {
+      return(log(1+t))  # équivalent à lambda(t) = coeff * t
+    }
+    M = lambda_fct(T_max)
+    powers_laplace[length(powers_laplace) + 1] <- calculate_power(laplace_test, n_sim, T_max, M, lambda_fct, n)
+    powers_weibull[length(powers_weibull) + 1] <- calculate_power(weibull_test, n_sim, T_max, M, lambda_fct, n)
+  }
+  
+  # Convertir en data frame
+  df <- data.frame(x = n_list, Laplace = powers_laplace, Weibull = powers_weibull)
+  df_long <- tidyr::pivot_longer(df, cols = c("Laplace", "Weibull"), 
+                                 names_to = "Distribution", 
+                                 values_to = "Power")
+  
+  # Créer le graphique
+  plot <- ggplot(df_long, aes(x = x, y = Power, color = Distribution, group = Distribution)) +
+    geom_point(size = 3) +
+    geom_line() +
+    labs(title = paste("Power for an log Lambda (T_max =", T_max, ")"),
+         x = "Sample Size (n)",
+         y = "Power") +
+    theme_minimal() +
+    scale_color_manual(values = c("blue", "red"))  # Personnaliser les couleurs
+  
+  # Afficher le graphique
+  print(plot)
+}
+```
+
+```{r}
+to_list = c(1/3, 1/2, 2/3)
+n_list = c(10, 20, 40)
+n_sim = 1000
+T_max=1
+
+for (to in to_list) {
+  powers_laplace = c()
+  powers_weibull = c()
+  
+  for (n in n_list) {
+    lambda_fct <- function(t) {
+      c <- ifelse(t > to, 2, 1)
+      return(c)
+    }
+    M = lambda_fct(T_max)
+    powers_laplace[length(powers_laplace) + 1] <- calculate_power(laplace_test, n_sim, T_max, M, lambda_fct, n)
+    powers_weibull[length(powers_weibull) + 1] <- calculate_power(weibull_test, n_sim, T_max, M, lambda_fct, n)
+  }
+  
+  # Convertir en data frame
+  df <- data.frame(x = n_list, Laplace = powers_laplace, Weibull = powers_weibull)
+  df_long <- tidyr::pivot_longer(df, cols = c("Laplace", "Weibull"), 
+                                 names_to = "Distribution", 
+                                 values_to = "Power")
+  
+  # Créer le graphique
+  plot <- ggplot(df_long, aes(x = x, y = Power, color = Distribution, group = Distribution)) +
+    geom_point(size = 3) +
+    geom_line() +
+    labs(title = paste("Power for an step function intensity (Tho =", to, ")"),
+         x = "Sample Size (n)",
+         y = "Power") +
+    theme_minimal() +
+    scale_color_manual(values = c("blue", "red"))  # Personnaliser les couleurs
+  
+  # Afficher le graphique
+  print(plot)
+}
+```
+
+
+## avec leurs fctions
+
+```{r}
+library(ggplot2)
+beta_list = c(1.0, 2.0, 4.0)
+n_list = c(10, 20, 40)
+T_max = 1
+n_sim = 5000
+
+for (b in beta_list) {
+  powers_laplace = c()
+  powers_weibull = c()
+  
+  for (n in n_list) {
+    lambda_func <- function(t) {
+      return(t^b) 
+    }
+    lambda_inv <- function(y){
+      return(y^(1/b))
+    }
+    powers_laplace[length(powers_laplace) + 1] <- calculate_power_asarticle(laplace_test, n_sim, T_max,lambda_func,lambda_inv, n)
+    powers_weibull[length(powers_weibull) + 1] <- calculate_power_asarticle(weibull_test, n_sim, T_max, lambda_func,lambda_inv, n)
+  }
+  
+  # Convertir en data frame
+  df <- data.frame(x = n_list, Laplace = powers_laplace, Weibull = powers_weibull)
+  df_long <- tidyr::pivot_longer(df, cols = c("Laplace", "Weibull"), 
+                                 names_to = "Distribution", 
+                                 values_to = "Power")
+  
+  # Créer le graphique
+  plot <- ggplot(df_long, aes(x = x, y = Power, color = Distribution, group = Distribution)) +
+    geom_point(size = 3) +
+    geom_line() +
+    labs(title = paste("Power for a Linear Lambda (Beta =", b, ")"),
+         x = "Sample Size (n)",
+         y = "Power") +
+    theme_minimal() +
+    scale_color_manual(values = c("blue", "red"))  # Personnaliser les couleurs
+  
+  # Afficher le graphique
+  print(plot)
+}
+
+```
+
+
+```{r}
+t_list = c(1.0, 2.0, 4.0)
+n_list = c(10, 20, 40)
+n_sim = 5000
+
+for (T_max in t_list) {
+  powers_laplace = c()
+  powers_weibull = c()
+  
+  for (n in n_list) {
+    lambda_func <- function(t) {
+      return(exp(t)-1) 
+    }
+    lambda_inv <- function(y){
+      return(log(y+1))
+    }
+    powers_laplace[length(powers_laplace) + 1] <- calculate_power_asarticle(laplace_test, n_sim, T_max,lambda_func,lambda_inv, n)
+    powers_weibull[length(powers_weibull) + 1] <- calculate_power_asarticle(weibull_test, n_sim, T_max, lambda_func,lambda_inv, n)
+  }
+  
+  # Convertir en data frame
+  df <- data.frame(x = n_list, Laplace = powers_laplace, Weibull = powers_weibull)
+  df_long <- tidyr::pivot_longer(df, cols = c("Laplace", "Weibull"), 
+                                 names_to = "Distribution", 
+                                 values_to = "Power")
+  
+  # Créer le graphique
+  plot <- ggplot(df_long, aes(x = x, y = Power, color = Distribution, group = Distribution)) +
+    geom_point(size = 3) +
+    geom_line() +
+    labs(title = paste("Power for an exponential Lambda (T_max =", T_max, ")"),
+         x = "Sample Size (n)",
+         y = "Power") +
+    theme_minimal() +
+    scale_color_manual(values = c("blue", "red"))  # Personnaliser les couleurs
+  
+  # Afficher le graphique
+  print(plot)
+}
+```
+
+
+```{r}
+t_list = c(10, 15, 25)
+n_list = c(10, 20, 40)
+n_sim = 5000
+
+for (T_max in t_list) {
+  powers_laplace = c()
+  powers_weibull = c()
+  
+  for (n in n_list) {
+    lambda_func <- function(t) {
+      return((1 + t) * log(1 + t) - t) 
+    }
+ 
+    
+    lambda_inv <- function(y){
+      optim_res <- optimize(f= (function(x) abs(lambda_func(x) - y)), interval = c(0, 25))
+      return(optim_res$minimum)
+    }
+    powers_laplace[length(powers_laplace) + 1] <- calculate_power_asarticle(laplace_test, n_sim, T_max,lambda_func,lambda_inv, n)
+    powers_weibull[length(powers_weibull) + 1] <- calculate_power_asarticle(weibull_test, n_sim, T_max, lambda_func,lambda_inv, n)
+  }
+  
+  # Convertir en data frame
+  df <- data.frame(x = n_list, Laplace = powers_laplace, Weibull = powers_weibull)
+  df_long <- tidyr::pivot_longer(df, cols = c("Laplace", "Weibull"), 
+                                 names_to = "Distribution", 
+                                 values_to = "Power")
+  
+  # Créer le graphique
+  plot <- ggplot(df_long, aes(x = x, y = Power, color = Distribution, group = Distribution)) +
+    geom_point(size = 3) +
+    geom_line() +
+    labs(title = paste("Power for an log Lambda (T_max =", T_max, ")"),
+         x = "Sample Size (n)",
+         y = "Power") +
+    theme_minimal() +
+    scale_color_manual(values = c("blue", "red"))  # Personnaliser les couleurs
+  
+  # Afficher le graphique
+  print(plot)
+}
+```
+
+```{r}
+to_list = c(1/3, 1/2, 2/3)
+n_list = c(10, 20, 40)
+n_sim = 1000
+T_max=1
+
+for (to in to_list) {
+  powers_laplace = c()
+  powers_weibull = c()
+  
+  for (n in n_list) {
+
+    lambda_func <- function(t) {
+      return(ifelse(t > to, 2*t - to, t)) 
+    }
+    lambda_inv <- function(y){
+      return(ifelse(y > to,(y + to)/2, y))
+    }
+    powers_laplace[length(powers_laplace) + 1] <- calculate_power_asarticle(laplace_test, n_sim, T_max,lambda_func,lambda_inv, n)
+    powers_weibull[length(powers_weibull) + 1] <- calculate_power_asarticle(weibull_test, n_sim, T_max, lambda_func,lambda_inv, n)
+  }
+  
+  # Convertir en data frame
+  df <- data.frame(x = n_list, Laplace = powers_laplace, Weibull = powers_weibull)
+  df_long <- tidyr::pivot_longer(df, cols = c("Laplace", "Weibull"), 
+                                 names_to = "Distribution", 
+                                 values_to = "Power")
+  
+  # Créer le graphique
+  plot <- ggplot(df_long, aes(x = x, y = Power, color = Distribution, group = Distribution)) +
+    geom_point(size = 3) +
+    geom_line() +
+    labs(title = paste("Power for an step function intensity (Tho =", to, ")"),
+         x = "Sample Size (n)",
+         y = "Power") +
+    theme_minimal() +
+    scale_color_manual(values = c("blue", "red"))  # Personnaliser les couleurs
+  
+  # Afficher le graphique
+  print(plot)
+}
 ```
