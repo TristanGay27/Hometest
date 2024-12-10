@@ -130,7 +130,7 @@ Therefore, $$\mathcal{L}_Z(u) = \mathbb{E}\left[e^{u \, 2 \sum_{i=1}^n \ln \left
 
 and,
 
-$$  \mathbb{E}\bigg[ (\frac{T*}{U_1})^{2u} \bigg] = \int_{\mathbb{R}} (\frac{T^*}{x})^{2u} \frac{\beta x^{\beta -1}}{T*^{\beta}} \mathbf{1}_{0 < x \le T^*} dx \\
+$$  \mathbb{E}\bigg[ (\frac{T*}{U_1})^{2u} \bigg] = \int_{\mathbb{r,echo=FALSE}} (\frac{T^*}{x})^{2u} \frac{\beta x^{\beta -1}}{T*^{\beta}} \mathbf{1}_{0 < x \le T^*} dx \\
 = T^{ * 2u - \beta} \beta \int_0^{T^*} \frac{x^{\beta -1}}{x^{2u}} dx \\ 
 = T^{ * 2u - \beta} \beta \bigg[\frac{x^{\beta - 2u}}{\beta -2u} \bigg]_0^{T^*} \\ 
 = T^{ * 2u - \beta} \beta \frac{T^{ * 2u - \beta}}{\beta - 2u} \\ 
@@ -170,7 +170,7 @@ In this section, we digitally construct the previously developed Laplace and Wei
 
 Here, we are building the functions that allow us to construct homogeneous and inhomogeneous Poisson processes. We construct inhomogeneous Poisson processes in two ways: as discussed in the course, and as outlined in the article [1].
 
-```{r}
+```{r, echo=FALSE}
 # Homogeneous Poisson process
 simulPPh1 <- function(lambda,T_max,fixed_n=-1)
 {
@@ -182,7 +182,7 @@ simulPPh1 <- function(lambda,T_max,fixed_n=-1)
 }
 ```
 
-```{r}
+```{r, echo=FALSE}
 # Inhomogeneous Poisson process
 simulPPi = function(lambda_fct,Tmax,M)
 {
@@ -207,7 +207,7 @@ simulPPi_asarticle = function(lambda_fct,lambda_inv,T_max,n)
 
 We define the function that calculates our test statistic and applies the test to the arrival times of a homogeneous or inhomogeneous Poisson process.
 
-```{r}
+```{r,echo=FALSE}
 laplace_stat <- function(arrival_times, T_max) {
   n <- length(arrival_times)
   Y <- sum(arrival_times)/T_max - (n / 2)
@@ -224,12 +224,12 @@ laplace_test <- function(arrival_times, T_max,alpha){
 }
 ```
 
-```{r}
+```{r,echo=FALSE}
 T_max = 10
 alpha = 0.05
 ```
 
-```{r}
+```{r,echo=FALSE}
 PPh1 = simulPPh1(2,T_max)
 
 res = laplace_test(PPh1,T_max,alpha)
@@ -242,7 +242,7 @@ In this case, for a process with a constant intensity function, we do not reject
 
 We compare two methods to simulate an inhomogeneous Poisson process: the thinning algorithm and the method described in [1].
 
-```{r}
+```{r,echo=FALSE}
 lambda_fct1 <- function(t){return(2*t)}
 
 M1=2*T_max
@@ -254,7 +254,7 @@ print(paste("Statistical test observed:",res[1]))
 print(paste("p-value:",res[2]))
 ```
 
-```{r}
+```{r,echo=FALSE}
 lambda_fct_prim <- function(t){return(t^2)}
 lambda_inv <- function(t){return(sqrt(t))}
 
@@ -274,7 +274,7 @@ The Laplace tests provide consistent results in the trials we conducted. Let's n
 
 Here, we construct our Weibull test statistic from the arrival times as demonstrated in the first part.
 
-```{r}
+```{r,echo=FALSE}
 weibull_stat <- function(arrival_times, T_max) {
   Z <- 2*sum(log(T_max/arrival_times))
   return(Z)
@@ -293,19 +293,19 @@ weibull_test <- function(arrival_times, T_max,alpha){
 
 Here, we construct our intensity function dependent on the parameters $\theta$ and $\beta > 0$.
 
-```{r}
+```{r,echo=FALSE}
 lambda_weibull <- function(theta,Beta,t){
   return ((Beta / theta) * (t / theta)^(Beta - 1))
 }
 ```
 
-```{r}
+```{r,echo=FALSE}
 T_max = 10
 alpha = 0.05
 theta = 1
 ```
 
-```{r}
+```{r,echo=FALSE}
 lambda_fct1 <- function(t){return(lambda_weibull(theta,1,t))}
 
 M1=lambda_weibull(theta,1,T_max)
@@ -317,7 +317,7 @@ print(paste("Statistical test observed:",res[1]))
 print(paste("p-value:",res[2]))
 ```
 
-```{r}
+```{r,echo=FALSE}
 lambda_fct_prim <- function(t){return(t)}
 lambda_inv <- function(t){return(t)}
 
@@ -331,7 +331,7 @@ print(paste("p-value:",res[2]))
 
 In the case where $\beta = 1$, which corresponds to the null hypothesis $H_0$ of the Weibull test, we obtain a p-value greater than 0.05. Therefore, we do not reject $H_0$ at the 5% significance level. This is consistent with our intensity function, which is constant.
 
-```{r}
+```{r,echo=FALSE}
 b=2
 lambda_fct1 <- function(t){return(lambda_weibull(theta,b,t))}
 
@@ -344,7 +344,7 @@ print(paste("Statistical test observed:",res[1]))
 print(paste("p-value:",res[2]))
 ```
 
-```{r}
+```{r,echo=FALSE}
 lambda_fct_prim <- function(t){return((b/2)*t^2)}
 lambda_inv <- function(t){return(sqrt(2*t/b))}
 
@@ -362,7 +362,7 @@ In this second case, we consider an intensity function with $\beta = 2 > 1$, whi
 
 In this section, we study the power of the different tests. The function `calculate_power` takes as arguments a test function, the number of simulations to perform in order to estimate the power, and the necessary arguments for the functions performing the test (last arrival time, upper bound of the intensity function, and the intensity function itself).
 
-```{r}
+```{r,echo=FALSE}
 calculate_power <- function(test,n_sim, T_max, lambda_func,lambda_inv, n, alpha = 0.05) {
   rejections <- 0
   ntot = 0
@@ -380,12 +380,19 @@ calculate_power <- function(test,n_sim, T_max, lambda_func,lambda_inv, n, alpha 
 
 We revisit the different cases presented in [1]. First, we study the power when the intensity function is a Weibull function. Next, we examine cases where the intensity function is exponential, logarithmic, and finally, a step function. To do so, as in the article, we fix both $T_{max}$ and the number of occurrences $n$.
 
-```{r}
+```{r,echo=FALSE}
 library(ggplot2)
+library(patchwork)
+library(tidyr)
+
+# Définir les paramètres
 beta_list = c(1.0, 2.0, 4.0)
 n_list = c(10, 20, 40)
 T_max = 1
 n_sim = 5000
+
+# Stocker les graphiques dans une liste
+plot_list <- list()
 
 for (b in beta_list) {
   powers_laplace = c()
@@ -395,32 +402,47 @@ for (b in beta_list) {
     lambda_func <- function(t) {
       return(t^b) 
     }
-    lambda_inv <- function(y){
+    lambda_inv <- function(y) {
       return(y^(1/b))
     }
-    powers_laplace[length(powers_laplace) + 1] <- calculate_power(laplace_test, n_sim, T_max,lambda_func,lambda_inv, n)
-    powers_weibull[length(powers_weibull) + 1] <- calculate_power(weibull_test, n_sim, T_max, lambda_func,lambda_inv, n)
+    
+    # Calcul de la puissance pour chaque test
+    powers_laplace[length(powers_laplace) + 1] <- calculate_power(laplace_test, n_sim, T_max, lambda_func, lambda_inv, n)
+    powers_weibull[length(powers_weibull) + 1] <- calculate_power(weibull_test, n_sim, T_max, lambda_func, lambda_inv, n)
   }
   
-  # Convertir en data frame
+  # Convertir les résultats en format long
   df <- data.frame(x = n_list, Laplace = powers_laplace, Weibull = powers_weibull)
-  df_long <- tidyr::pivot_longer(df, cols = c("Laplace", "Weibull"), 
-                                 names_to = "Distribution", 
-                                 values_to = "Power")
+  df_long <- pivot_longer(df, cols = c("Laplace", "Weibull"), 
+                          names_to = "Distribution", 
+                          values_to = "Power")
   
   # Créer le graphique
   plot <- ggplot(df_long, aes(x = x, y = Power, color = Distribution, group = Distribution)) +
     geom_point(size = 3) +
     geom_line() +
-    labs(title = paste("Power for a Weibull function (Beta =", b, ")"),
+    labs(title = paste("Beta =", b),
          x = "Sample Size (n)",
          y = "Power") +
     theme_minimal() +
     scale_color_manual(values = c("blue", "red"))  # Personnaliser les couleurs
   
-  # Afficher le graphique
-  print(plot)
+  # Ajouter le graphique à la liste
+  plot_list <- c(plot_list, list(plot))
 }
+
+# Combiner les graphiques avec une légende commune et un titre commun
+combined_plot <- wrap_plots(plot_list, ncol = 3, guides = "collect") +
+  plot_annotation(
+    title = "Power Analysis for Weibull Function",
+    subtitle = "Comparison of Laplace and Weibull tests across different sample sizes and Beta values",
+    theme = theme(plot.title = element_text(size = 16, hjust = 0.5),
+                  plot.subtitle = element_text(size = 12, hjust = 0.5))
+  )
+
+# Afficher le graphique combiné
+print(combined_plot)
+
 
 ```
 
@@ -430,10 +452,18 @@ The larger $n$, the greater the power for $\beta = 2$ or $\beta = 4$. As a resul
 
 Finally, we observe that the red curve (Weibull) is always above the blue curve (Laplace). For this type of function, the Weibull test is more powerful and is therefore recommended.
 
-```{r}
+```{r,echo=FALSE}
+library(ggplot2)
+library(patchwork)
+library(tidyr)
+
+# Définir les paramètres
 t_list = c(1.0, 2.0, 4.0)
 n_list = c(10, 20, 40)
 n_sim = 5000
+
+# Stocker les graphiques dans une liste
+plot_list <- list()
 
 for (T_max in t_list) {
   powers_laplace = c()
@@ -443,32 +473,47 @@ for (T_max in t_list) {
     lambda_func <- function(t) {
       return(exp(t)-1) 
     }
-    lambda_inv <- function(y){
-      return(log(y+1))
+    lambda_inv <- function(y) {
+      return(log(y + 1))
     }
-    powers_laplace[length(powers_laplace) + 1] <- calculate_power(laplace_test, n_sim, T_max,lambda_func,lambda_inv, n)
-    powers_weibull[length(powers_weibull) + 1] <- calculate_power(weibull_test, n_sim, T_max, lambda_func,lambda_inv, n)
+    
+    # Calcul de la puissance pour chaque test
+    powers_laplace[length(powers_laplace) + 1] <- calculate_power(laplace_test, n_sim, T_max, lambda_func, lambda_inv, n)
+    powers_weibull[length(powers_weibull) + 1] <- calculate_power(weibull_test, n_sim, T_max, lambda_func, lambda_inv, n)
   }
   
-  # Convertir en data frame
+  # Convertir les résultats en format long
   df <- data.frame(x = n_list, Laplace = powers_laplace, Weibull = powers_weibull)
-  df_long <- tidyr::pivot_longer(df, cols = c("Laplace", "Weibull"), 
-                                 names_to = "Distribution", 
-                                 values_to = "Power")
+  df_long <- pivot_longer(df, cols = c("Laplace", "Weibull"), 
+                          names_to = "Distribution", 
+                          values_to = "Power")
   
   # Créer le graphique
   plot <- ggplot(df_long, aes(x = x, y = Power, color = Distribution, group = Distribution)) +
     geom_point(size = 3) +
     geom_line() +
-    labs(title = paste("Power for an exponential Lambda (T_max =", T_max, ")"),
+    labs(title = paste("T_max =", T_max),
          x = "Sample Size (n)",
          y = "Power") +
     theme_minimal() +
     scale_color_manual(values = c("blue", "red"))  # Personnaliser les couleurs
   
-  # Afficher le graphique
-  print(plot)
+  # Ajouter le graphique à la liste
+  plot_list <- c(plot_list, list(plot))
 }
+
+# Combiner les graphiques avec une légende commune et un titre commun
+combined_plot <- wrap_plots(plot_list, ncol = 3, guides = "collect") +
+  plot_annotation(
+    title = "Power Analysis for Exponential Lambda",
+    subtitle = "Comparison of Laplace and Weibull tests across different sample sizes and T_max values",
+    theme = theme(plot.title = element_text(size = 16, hjust = 0.5),
+                  plot.subtitle = element_text(size = 12, hjust = 0.5))
+  )
+
+# Afficher le graphique combiné
+print(combined_plot)
+
 ```
 
 We observe that as $T_{\text{max}}$ increases, the power also increases. For $n = 40$, the power is around $0.5$ when $T_{\text{max}} = 1$, whereas it reaches $1$ when $T_{\text{max}} = 4$ .
@@ -479,10 +524,18 @@ The larger $T_{\text{max}}$, the more easily the growth of the intensity functio
 
 Additionally, the power curve for Laplace is always above that for Weibull. The Laplace test is therefore more powerful for exponential-type functions.
 
-```{r}
+```{r,echo=FALSE}
+library(ggplot2)
+library(patchwork)
+library(tidyr)
+
+# Définir les paramètres
 t_list = c(10, 15, 25)
 n_list = c(10, 20, 40)
 n_sim = 5000
+
+# Stocker les graphiques dans une liste
+plot_list <- list()
 
 for (T_max in t_list) {
   powers_laplace = c()
@@ -506,30 +559,43 @@ for (T_max in t_list) {
         return(sapply(y, inverse_scalar))
       }
     
-    
-    powers_laplace[length(powers_laplace) + 1] <- calculate_power(laplace_test, n_sim, T_max,lambda_func,lambda_inv, n)
-    powers_weibull[length(powers_weibull) + 1] <- calculate_power(weibull_test, n_sim, T_max, lambda_func,lambda_inv, n)
+    # Calcul de la puissance pour chaque test
+    powers_laplace[length(powers_laplace) + 1] <- calculate_power(laplace_test, n_sim, T_max, lambda_func, lambda_inv, n)
+    powers_weibull[length(powers_weibull) + 1] <- calculate_power(weibull_test, n_sim, T_max, lambda_func, lambda_inv, n)
   }
   
-  # Convertir en data frame
+  # Convertir les résultats en format long
   df <- data.frame(x = n_list, Laplace = powers_laplace, Weibull = powers_weibull)
-  df_long <- tidyr::pivot_longer(df, cols = c("Laplace", "Weibull"), 
-                                 names_to = "Distribution", 
-                                 values_to = "Power")
+  df_long <- pivot_longer(df, cols = c("Laplace", "Weibull"), 
+                          names_to = "Distribution", 
+                          values_to = "Power")
   
   # Créer le graphique
   plot <- ggplot(df_long, aes(x = x, y = Power, color = Distribution, group = Distribution)) +
     geom_point(size = 3) +
     geom_line() +
-    labs(title = paste("Power for an log Lambda (T_max =", T_max, ")"),
+    labs(title = paste("T_max =", T_max),
          x = "Sample Size (n)",
          y = "Power") +
     theme_minimal() +
     scale_color_manual(values = c("blue", "red"))  # Personnaliser les couleurs
   
-  # Afficher le graphique
-  print(plot)
+  # Ajouter le graphique à la liste
+  plot_list <- c(plot_list, list(plot))
 }
+
+# Combiner les graphiques avec une légende commune et un titre commun
+combined_plot <- wrap_plots(plot_list, ncol = 3, guides = "collect") +
+  plot_annotation(
+    title = "Power Analysis for Log-Lambda",
+    subtitle = "Comparison of Laplace and Weibull tests across different sample sizes and T_max values",
+    theme = theme(plot.title = element_text(size = 16, hjust = 0.5),
+                  plot.subtitle = element_text(size = 12, hjust = 0.5))
+  )
+
+# Afficher le graphique combiné
+print(combined_plot)
+
 ```
 
 **Remark:** When integrating the function $\lambda(t) = \log(1 + t)$, the resulting function does not have an explicit inverse. We approximate it using the `uniroot` function in **R**.
@@ -542,7 +608,7 @@ As $n$ increases, the power also increases, for the same reason as mentioned ear
 
 The power of the Weibull test is always greater than that of the Laplace test.
 
-```{r}
+```{r,echo=FALSE}
 library(ggplot2)
 library(patchwork)
 
@@ -603,32 +669,6 @@ print(combined_plot)
 
 ```
 
-```{r}
-library(ggplot2)
-
-p1 <- ggplot(mtcars) + geom_point(aes(mpg, disp))
-p2 <- ggplot(mtcars) + geom_boxplot(aes(gear, disp, group = gear))
-p3 <- ggplot(mtcars) + geom_bar(aes(gear)) + facet_wrap(~cyl)
-p4 <- ggplot(mtcars) + geom_bar(aes(carb))
-p5 <- ggplot(mtcars) + geom_violin(aes(cyl, mpg, group = cyl))
-
-# Either add the plots as single arguments
-wrap_plots(p1, p2, p3, p4, p5)
-
-# Or add them as a list...
-plots <- list(p1, p2, p3, p4, p5)
-wrap_plots(plots)
-
-# Match plots to areas by name
-design <- "#BB
-           AA#"
-wrap_plots(B = p1, A = p2, design = design)
-
-# Compare to not using named plot arguments
-wrap_plots(p1, p2, design = design)
-
-```
-
 As $n$ increases, the power becomes greater for the same reasons as mentioned previously.
 
 For the Weibull test, the power tends to decrease as $\theta$ increases. Lower values are observed for $\theta = 2/3$, while similar values are obtained for $\theta = 1/3$ and $\theta = 1/2$.
@@ -641,7 +681,7 @@ Overall, these simulations confirm the results presented in [1].
 
 #### II.2.b - Study of the Weibull test parameters
 
-```{r}
+```{r,echo=FALSE}
 calculate_power_course <- function(test,n_sim, T_max, borne_sup,lambda_func, alpha = 0.05) {
   rejections <- 0
   ntot = 0
@@ -658,7 +698,8 @@ calculate_power_course <- function(test,n_sim, T_max, borne_sup,lambda_func, alp
 }
 ```
 
-```{r}
+```{r,echo=FALSE, out.width="50%", out.height="50%", fig.align='center'}
+
 library(ggplot2)
 beta_list = c(1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0)
 T_max =10
@@ -691,7 +732,7 @@ ggplot(df_long, aes(x = x, y = Power, color = Distribution, group = Distribution
   scale_color_manual(values = c("blue", "red"))  # Personnaliser les couleurs
 ```
 
-```{r}
+```{r,echo=FALSE, out.width="50%", out.height="50%", fig.align='center'}
 coef_list = c(1,2,3,5,10,7,8,15)
 T_max =10
 n_sim=1000
@@ -734,7 +775,7 @@ Why can we consider that fires follow a Poisson process?
 
 We assume that at time $t_0$, no fires have occurred, so $N_0=0$. Furthermore, we hypothesize that the occurrence of one fire does not affect the likelihood of another fire occurring, ensuring that the increments of the process are independent. These assumptions align with the fundamental properties of a Poisson process, making it a suitable model for this phenomenon.
 
-```{r}
+```{r,echo=FALSE, results=FALSE, out.width="50%", out.height="50%"}
 library(evir)
 library(ggplot2)
 
@@ -767,7 +808,7 @@ ggplot(fire_data, aes(x = Year, y = Count)) +
 
 The bar chart shows the annual number of large fire insurance claims in Denmark from 1980 to 1990, highlighting fluctuations over the decade. The number of claims was relatively stable in the early 1980s, ranging from 166 to 181, before dipping to a low of 153 in 1984. This was followed by a sharp increase, peaking at 238 claims in 1986, the highest during the period. The latter half of the decade remained consistently high, with minor fluctuations. Overall, the trend suggests increasing claim activity over time, possibly influenced by external factors such as changing reporting practices, economic conditions, or environmental events.
 
-```{r}
+```{r,echo=FALSE, out.width="50%", out.height="50%"}
 plot.PP<- function(PP)
 {
   plot(c(0,PP),0:length(PP),type="s",xlab="time t",ylab="number of events by time t")
@@ -785,7 +826,7 @@ We aim to study the function $\lambda$ that describes our Poisson process. We co
 
 To do so, we begin by finding the optimal parameters for these functions using the maximum likelihood method.
 
-```{r}
+```{r,echo=FALSE, warning=FALSE}
 log_likelihood_exp <- function(params) {
   alpha <- params[1]
   beta <- params[2]
@@ -827,7 +868,7 @@ params_weibull <- optim(par = c(1, 1), log_likelihood_weibull)$par
 
 Now that we have our functions well-defined with their various parameters, we calculate the AIC (Akaike Information Criterion) to determine which function best models our process.
 
-```{r}
+```{r,echo=FALSE}
 calculate_aic <- function(log_L, k) {
   return(2 * k - 2 * log_L)
 }
@@ -848,7 +889,7 @@ Let us study the behavior of our intensity function using the Laplace and Weibul
 
 We now apply our tests to the data we have just retrieved:
 
-```{r}
+```{r,echo=FALSE}
 set.seed(18) 
 T_max = day_max
 alpha = 0.05
@@ -862,7 +903,7 @@ In the context of the Laplace test, we reject $H_0$ at a 5% significance level. 
 
 These results provide strong evidence supporting the hypothesis of an increasing intensity function.
 
-```{r}
+```{r,echo=FALSE}
 res = weibull_test(day_ecart,T_max,alpha)
 print(paste("(Weibull) Rejection of H_0:", as.logical(res[3])))
 print(paste("(Weibull) Statistical test observed:",res[1]))
