@@ -358,7 +358,7 @@ print(paste("p-value:",res[2]))
 
 In this second case, we consider an intensity function with $\beta = 2 > 1$, which is therefore increasing. We obtain a very low p-value and thus reject $H_0$ at the 5% significance level, which is consistent with our hypotheses.
 
-#### II.2 - Comparison of tests
+#### II.2.a - Comparison of tests in the article
 
 In this section, we study the power of the different tests. The function `calculate_power` takes as arguments a test function, the number of simulations to perform in order to estimate the power, and the necessary arguments for the functions performing the test (last arrival time, upper bound of the intensity function, and the intensity function itself).
 
@@ -426,7 +426,7 @@ for (b in beta_list) {
 
 We obtain the same results as in [1]. First, the larger $\beta$, the more the function increases, and the more confidently we reject $H_0$. This result holds when $\beta = 1$, where we are under $H_0$ and the power is approximately $0.05$ for both tests. When $\beta = 2$, the power is about $0.6$ for $n = 10$, rising to $0.98$ for $n = 40$. For $\beta = 4$, the power is almost always equal to $1$ for both tests.
 
-The larger $n$, the greater the power for $\beta = 2$ or $\beta = 4$. We have an asymptotic test statistic in both cases, so the larger $n$ is, the closer we get to its asymptotic distribution. As a result, the more powerful the test.
+The larger $n$, the greater the power for $\beta = 2$ or $\beta = 4$. As a result, the more powerful the test.
 
 Finally, we observe that the red curve (Weibull) is always above the blue curve (Laplace). For this type of function, the Weibull test is more powerful and is therefore recommended.
 
@@ -536,53 +536,97 @@ for (T_max in t_list) {
 
 As $T_{\text{max}}$ increases, the power decreases. For example, for $n = 40$, the power for the Laplace test is 0.75 when $T_{\text{max}} = 10$ and decreases to $0.6$ when $T_{\text{max}} = 25$ .
 
-Cela vient du fait que la fonction log(1+t) a une croissante de moins en moins importante lorsque t est grand. Ainsi, pour un T_max elevé, la fonction d'intensité peut sembler presque constante car la forte croissance du début est atténuée par la stabilisation de la fonction. C'est pourquoi, plus T_max augmente, plus la puissance de nos tests diminue.
+This occurs because the function $\log(1 + t)$ exhibits decreasing growth as $t$ becomes large. Consequently, for a high $T_{\text{max}}$, the intensity function may appear almost constant, as the rapid initial growth is mitigated by the stabilization of the function. Therefore, as $T_{\text{max}}$ increases, the power of our tests decreases.
 
 As $n$ increases, the power also increases, for the same reason as mentioned earlier.
 
 The power of the Weibull test is always greater than that of the Laplace test.
 
 ```{r}
+library(ggplot2)
+library(patchwork)
+
+# Définir les plots à l'intérieur d'une boucle sans créer de dataframe
 to_list = c(1/3, 1/2, 2/3)
 n_list = c(10, 20, 40)
 n_sim = 1000
-T_max=1
+T_max = 1
+
+# Stocker les graphiques dans une liste
+plot_list <- list()
 
 for (to in to_list) {
   powers_laplace = c()
   powers_weibull = c()
-  
-  for (n in n_list) {
 
+  for (n in n_list) {
     lambda_func <- function(t) {
-      return(ifelse(t > to, 2*t - to, t)) 
+      return(ifelse(t > to, 2 * t - to, t))
     }
-    lambda_inv <- function(y){
-      return(ifelse(y > to,(y + to)/2, y))
+    lambda_inv <- function(y) {
+      return(ifelse(y > to, (y + to) / 2, y))
     }
-    powers_laplace[length(powers_laplace) + 1] <- calculate_power(laplace_test, n_sim, T_max,lambda_func,lambda_inv, n)
-    powers_weibull[length(powers_weibull) + 1] <- calculate_power(weibull_test, n_sim, T_max, lambda_func,lambda_inv, n)
+    powers_laplace[length(powers_laplace) + 1] <- calculate_power(laplace_test, n_sim, T_max, lambda_func, lambda_inv, n)
+    powers_weibull[length(powers_weibull) + 1] <- calculate_power(weibull_test, n_sim, T_max, lambda_func, lambda_inv, n)
   }
-  
-  # Convertir en data frame
-  df <- data.frame(x = n_list, Laplace = powers_laplace, Weibull = powers_weibull)
-  df_long <- tidyr::pivot_longer(df, cols = c("Laplace", "Weibull"), 
-                                 names_to = "Distribution", 
-                                 values_to = "Power")
-  
-  # Créer le graphique
-  plot <- ggplot(df_long, aes(x = x, y = Power, color = Distribution, group = Distribution)) +
-    geom_point(size = 3) +
-    geom_line() +
-    labs(title = paste("Power for an step function intensity (Tho =", to, ")"),
+
+  # Arrondir la valeur de `to` pour l'afficher dans le titre
+  to_rounded <- round(to, 2)
+
+  # Créer le graphique sans data frame
+  plot <- ggplot() +
+    geom_point(data = data.frame(x = n_list, Power = powers_laplace), aes(x = x, y = Power, color = "Laplace"), size = 3) +
+    geom_line(data = data.frame(x = n_list, Power = powers_laplace), aes(x = x, y = Power, color = "Laplace")) +
+    geom_point(data = data.frame(x = n_list, Power = powers_weibull), aes(x = x, y = Power, color = "Weibull"), size = 3) +
+    geom_line(data = data.frame(x = n_list, Power = powers_weibull), aes(x = x, y = Power, color = "Weibull")) +
+    labs(title = paste("Tho =", to_rounded),  # Titre arrondi
          x = "Sample Size (n)",
          y = "Power") +
-    theme_minimal() +
     scale_color_manual(values = c("blue", "red"))  # Personnaliser les couleurs
-  
-  # Afficher le graphique
-  print(plot)
+
+  # Ajouter le graphique à la liste
+  plot_list <- c(plot_list, list(plot))
 }
+# Combiner les graphiques avec une légende commune et un titre commun
+combined_plot <- wrap_plots(plot_list, ncol = 3, guides="collect") +
+  plot_annotation(
+    title = "Power Analysis for Step Function Intensity",
+    subtitle = "Comparison of Laplace and Weibull tests across different sample sizes and thresholds",
+    theme = theme(plot.title = element_text(size = 16, hjust = 0.5),
+                  plot.subtitle = element_text(size = 12, hjust = 0.5))
+  )
+
+# Afficher le graphique combiné
+print(combined_plot)
+
+
+
+```
+
+```{r}
+library(ggplot2)
+
+p1 <- ggplot(mtcars) + geom_point(aes(mpg, disp))
+p2 <- ggplot(mtcars) + geom_boxplot(aes(gear, disp, group = gear))
+p3 <- ggplot(mtcars) + geom_bar(aes(gear)) + facet_wrap(~cyl)
+p4 <- ggplot(mtcars) + geom_bar(aes(carb))
+p5 <- ggplot(mtcars) + geom_violin(aes(cyl, mpg, group = cyl))
+
+# Either add the plots as single arguments
+wrap_plots(p1, p2, p3, p4, p5)
+
+# Or add them as a list...
+plots <- list(p1, p2, p3, p4, p5)
+wrap_plots(plots)
+
+# Match plots to areas by name
+design <- "#BB
+           AA#"
+wrap_plots(B = p1, A = p2, design = design)
+
+# Compare to not using named plot arguments
+wrap_plots(p1, p2, design = design)
+
 ```
 
 As $n$ increases, the power becomes greater for the same reasons as mentioned previously.
@@ -594,6 +638,90 @@ In contrast, for the Laplace test, the power appears to slightly increase with $
 Thus, for $\theta = 1/3$, the Weibull test is more powerful. For the other $\theta$ value studied, the Laplace test is more powerful.
 
 Overall, these simulations confirm the results presented in [1].
+
+#### II.2.b - Study of the Weibull test parameters
+
+```{r}
+calculate_power_course <- function(test,n_sim, T_max, borne_sup,lambda_func, alpha = 0.05) {
+  rejections <- 0
+  ntot = 0
+  for (i in 1:n_sim) {
+    PPi1 = simulPPi(lambda_func,T_max,borne_sup) 
+    Z <- test(PPi1, T_max,alpha)
+    if (!is.nan(Z[3]) && !is.na(Z[3])){
+      if (Z[3]) {
+        rejections <- rejections + 1
+      }
+      }
+  }
+  return(rejections / n_sim)
+}
+```
+
+```{r}
+library(ggplot2)
+beta_list = c(1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0)
+T_max =10
+n_sim=10000
+
+powers_laplace = c()
+powers_weibull = c()
+
+for (b in beta_list) {
+  lambda_fct <- function(t){return(lambda_weibull(1,b,t))}
+  M=lambda_fct(T_max)
+  powers_laplace[length(powers_laplace) + 1] <- calculate_power_course(laplace_test,n_sim, T_max, M, lambda_fct)
+  powers_weibull[length(powers_weibull) + 1] <- calculate_power_course(weibull_test,n_sim, T_max, M, lambda_fct)
+}
+
+# Convertir en data frame
+df <- data.frame(x = beta_list, Laplace = powers_laplace,Weibull = powers_weibull)
+df_long <- tidyr::pivot_longer(df, cols = c("Laplace", "Weibull"), 
+                               names_to = "Distribution", 
+                               values_to = "Power")
+
+# Créer le graphique
+ggplot(df_long, aes(x = x, y = Power, color = Distribution, group = Distribution)) +
+  geom_point(size = 3) +
+  geom_line() +
+  labs(title = "Power as function of beta",
+       x = "Beta",
+       y = "Power") +
+  theme_minimal() +
+  scale_color_manual(values = c("blue", "red"))  # Personnaliser les couleurs
+```
+
+```{r}
+coef_list = c(1,2,3,5,10,7,8,15)
+T_max =10
+n_sim=1000
+
+powers_laplace = c()
+powers_weibull = c()
+
+for (theta in coef_list) {
+  lambda_fct <- function(t){return(lambda_weibull(theta,2,t))} # équivalent à lambda(t) = coeff * t
+  M=lambda_fct(T_max)
+  powers_laplace[length(powers_laplace) + 1] <- calculate_power_course(laplace_test,n_sim, T_max, M, lambda_fct)
+  powers_weibull[length(powers_weibull) + 1] <- calculate_power_course(weibull_test,n_sim, T_max, M, lambda_fct)
+}
+
+# Convertir en data frame
+df <- data.frame(x = coef_list, Laplace = powers_laplace,Weibull = powers_weibull)
+df_long <- tidyr::pivot_longer(df, cols = c("Laplace", "Weibull"), 
+                               names_to = "Distribution", 
+                               values_to = "Power")
+
+# Créer le graphique
+ggplot(df_long, aes(x = x, y = Power, color = Distribution, group = Distribution)) +
+  geom_point(size = 3) +
+  geom_line() +
+  labs(title = "Power as function of theta",
+       x = "theta",
+       y = "Power") +
+  theme_minimal() +
+  scale_color_manual(values = c("blue", "red"))  # Personnaliser les couleurs
+```
 
 ## III - Application on Danish fires
 
@@ -639,8 +767,6 @@ ggplot(fire_data, aes(x = Year, y = Count)) +
 
 The bar chart shows the annual number of large fire insurance claims in Denmark from 1980 to 1990, highlighting fluctuations over the decade. The number of claims was relatively stable in the early 1980s, ranging from 166 to 181, before dipping to a low of 153 in 1984. This was followed by a sharp increase, peaking at 238 claims in 1986, the highest during the period. The latter half of the decade remained consistently high, with minor fluctuations. Overall, the trend suggests increasing claim activity over time, possibly influenced by external factors such as changing reporting practices, economic conditions, or environmental events.
 
-We aim to study the function $\lambda$ that describes our Poisson process. We consider the four functions previously analyzed in the power tests to determine which one best describes our process.
-
 ```{r}
 plot.PP<- function(PP)
 {
@@ -654,6 +780,8 @@ plot.PP(day_ecart)
 ```
 
 We observe that the cumulative number of events is displayed over time, showing an increasing trend. This growth appears to slightly accelerate as time progresses.
+
+We aim to study the function $\lambda$ that describes our Poisson process. We consider the four functions previously analyzed in the power tests to determine which one best describes our process.
 
 To do so, we begin by finding the optimal parameters for these functions using the maximum likelihood method.
 
@@ -704,7 +832,6 @@ calculate_aic <- function(log_L, k) {
   return(2 * k - 2 * log_L)
 }
 
-# Calculer l'AIC pour chaque modèle
 aic_exp <- calculate_aic(-log_likelihood_exp(params_exp), 2)
 aic_log <- calculate_aic(-log_likelihood_log(params_log), 2)
 aic_two_values <- calculate_aic(-log_likelihood_two_values(params_two_values), 3)
@@ -750,4 +877,6 @@ In conclusion, based on the Danish fires dataset, the results of the Laplace and
 
 # A faire
 
-#### *References* [1] Lee J Bain, Max Engelhardt, and FT Wright. "Tests for an increasing trend in the intensity of a Poisson process: A power study*". Journal of the American Statistical Association*, 80(390):419--422, 1985.
+#### *References* 
+
+[1] Lee J Bain, Max Engelhardt, and FT Wright. "Tests for an increasing trend in the intensity of a Poisson process: A power study*". Journal of the American Statistical Association*, 80(390):419--422, 1985.
