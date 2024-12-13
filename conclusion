@@ -1,5 +1,0 @@
-The asymptotic Laplace test and the non-asymptotic Weibull test are both effective and robust homogeneity tests. Regardless of the intensity function, these two tests have provided satisfactory results, whether applied to synthetic data (e.g., intensity functions such as logarithmic, affine exponential, etc.) or real-world data, such as the number of insurance claims due to fire in Denmark or the occurrence of Danish fires in the 1980s. Interestingly, the latter is revealed to be an inhomogeneous process, showing an increasing number of fires in Denmark over time.
-
-Although both tests are highly effective, one proves to be more efficient than the other depending on the intensity function. For instance, the Weibull test is more suitable for logarithmic or Weibull intensity functions, whereas the Laplace test is better suited for exponential or stepwise functions.
-
-While the results are very conclusive, further exploration could involve testing additional test statistics, such as Barlow's test or Boswell's likelihood ratio test, which may prove to be even more effective.

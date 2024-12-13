@@ -321,8 +321,8 @@ theme_minimal()
 
 ```{r}
 library(ggplot2)
-beta_list = c(1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0)
-T_max =10
+beta_list = c(1.1,1.2,1.4,1.5,1.6,1.75,1.85,2.0,2.25,2.5)
+T_max =5
 n_sim=10000
 
 powers_laplace = c()
@@ -356,15 +356,15 @@ ggplot(df_long, aes(x = x, y = Power, color = Distribution, group = Distribution
 
 
 ```{r}
-coef_list = c(1,2,3,5,10,7,8,15)
-T_max =10
+coef_list = c(1,2,3,4,5,10,7,8,15)
+T_max =5
 n_sim=1000
 
 powers_laplace = c()
 powers_weibull = c()
 
 for (theta in coef_list) {
-  lambda_fct <- function(t){return(lambda_weibull(theta,2,t))} # équivalent à lambda(t) = coeff * t
+  lambda_fct <- function(t){return(lambda_weibull(theta,2,t))} 
   M=lambda_fct(T_max)
   powers_laplace[length(powers_laplace) + 1] <- calculate_power(laplace_test,n_sim, T_max, M, lambda_fct)
   powers_weibull[length(powers_weibull) + 1] <- calculate_power(weibull_test,n_sim, T_max, M, lambda_fct)
